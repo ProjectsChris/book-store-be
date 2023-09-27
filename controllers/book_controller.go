@@ -53,11 +53,14 @@ func GetBook(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	//utilizziamo gli endpoint non gli header
+	bookTitle := c.Param("title")
+	
 	// set filter
 	var book models.Book
 	filter := bson.D{{
 		Key:   "titolo",
-		Value: c.Request.Header.Get("Title"),
+		Value: bookTitle,
 	}}
 
 	// finds a book with same "Titolo"

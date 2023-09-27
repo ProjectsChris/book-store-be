@@ -9,10 +9,13 @@ import (
 func BookRoutes(r *gin.RouterGroup) {
 	v1 := r.Group("/api/v1")
 	{
-		// GET request
-		v1.GET("book", controllers.GetBook)
+		book := v1.Group("/book")
+		{
+			// GET request
+			book.GET("/:titolo", controllers.GetBook)
 
-		// POST request
-		v1.POST("/new-book", controllers.PostBook)
+			// POST request
+			book.POST("/", controllers.PostBook)
+		}
 	}
 }
