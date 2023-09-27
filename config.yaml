@@ -1,0 +1,9 @@
+log:
+  level: -1
+  enableJson: false
+databse:
+  connectionString: 
+observability:
+  serviceName:
+  endpoint:
+  enabled:
