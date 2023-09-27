@@ -11,9 +11,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var collectionBook *mongo.Collection = database.ConnectDatabase().Database("BOOK-STORE").Collection("Books")
+var bookCollection *mongo.Collection = database.ConnectDatabase().Database("BOOK-STORE").Collection("Books")
+var counterCollection *mongo.Collection = database.ConnectDatabase().Database("BOOK-STORE").Collection("Counters")
 
 // PostBook function add new book
 func PostBook(c *gin.Context) {
@@ -28,8 +30,33 @@ func PostBook(c *gin.Context) {
 		return
 	}
 
+	// auto increment id
+	var auto_increment map[string]any = bson.M{}
+	err := counterCollection.FindOneAndUpdate(
+		ctx,
+		bson.D{{
+			Key:   "_id",
+			Value: "bookId",
+		}},
+		bson.D{{
+			Key: "$inc",
+			Value: bson.D{{
+				Key:   "seq",
+				Value: 1,
+			}},
+		}},
+		options.FindOneAndUpdate().SetReturnDocument(options.After).SetUpsert(true),
+	).Decode(&auto_increment)
+	if err != nil {
+		responses.ResponseMessage(c, http.StatusInternalServerError, "error", err.Error())
+		return
+	}
+
+	// change value of the id
+	book.Id = auto_increment["seq"].(int32)
+
 	// adds new book
-	_, err := collectionBook.InsertOne(ctx, book)
+	_, err = bookCollection.InsertOne(ctx, book)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, "error", err.Error())
 		return
@@ -45,7 +72,7 @@ func GetBooks(c *gin.Context) {
 	defer cancel()
 
 	// find all books
-	cur, err := collectionBook.Find(ctx, bson.D{})
+	cur, err := bookCollection.Find(ctx, bson.D{})
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, "error", err.Error())
 		return
