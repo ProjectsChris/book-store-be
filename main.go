@@ -2,6 +2,7 @@ package main
 
 import (
 	"book-store-be/database"
+	"book-store-be/routes"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,5 +13,8 @@ func main() {
 
 	// gin
 	r := gin.Default()
+
+	routes.BookRoutes(&r.RouterGroup)
+
 	r.Run()
 }
