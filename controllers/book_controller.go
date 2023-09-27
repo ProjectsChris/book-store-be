@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -44,4 +45,30 @@ func PostBook(c *gin.Context) {
 	}
 
 	responses.ResponseMessage(c, http.StatusOK, "success", "added new book")
+}
+
+// GetBook function that return a JSON with detail book
+func GetBook(c *gin.Context) {
+	// create a deadline
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// set filter
+	var book models.Book
+	filter := bson.D{{
+		Key:   "titolo",
+		Value: c.Request.Header.Get("Title"),
+	}}
+
+	// finds a book with same "Titolo"
+	err := bookCollection.FindOne(ctx, filter).Decode(&book)
+	if err == mongo.ErrNoDocuments {
+		responses.ResponseMessage(c, http.StatusInternalServerError, "error", "book not found")
+		return
+	} else if err != nil {
+		responses.ResponseMessage(c, http.StatusInternalServerError, "error", err.Error())
+		return
+	}
+
+	responses.ResponseMessage(c, http.StatusOK, "success", book)
 }
