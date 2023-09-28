@@ -3,6 +3,7 @@ package main
 import (
 	"book-store-be/database"
 	"book-store-be/routes"
+	"log"
 	"net/http"
 	"time"
 
@@ -28,14 +29,20 @@ import (
 // @host		192.168.3.8:8080
 // @BasePath	/api/v1
 func main() {
+
+	config, err := ReadConfig()
+	if err != nil {
+		log.Fatal("Impossibile Leggere il file di configurazione")
+	}
+
 	// connect to the database
-	database.ConnectDatabase()
+	mongoClient := database.ConnectDatabase(config.Database.ConnectionString)
 
 	// gin
 	r := gin.Default()
 
-	// CORS middleware
-	var config cors.Config = cors.Config{
+	// CORS configuration
+	corsConfig := cors.Config{
 		AllowAllOrigins:  true,
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"},
@@ -44,14 +51,15 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}
 
-	r.Use(cors.New(config))
+	// CORS middleware
+	r.Use(cors.New(corsConfig))
 
 	// routes
-	routes.BookRoutes(&r.RouterGroup)
+	routes.BookRoutes(&r.RouterGroup, mongoClient)
 
 	// swagger API
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// run gin
-	r.Run()
+	r.Run(":8000")
 }

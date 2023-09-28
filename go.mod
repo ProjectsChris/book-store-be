@@ -58,4 +58,4 @@ require (
 	golang.org/x/net v0.10.0 // indirect
 )
 
-require github.com/gin-contrib/cors v1.4.0 // indirect
+require github.com/gin-contrib/cors v1.4.0

@@ -9,17 +9,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-// TODO: change values with Mongo Atlas
-const uri string = "mongodb://localhost:27017"
 
 // ConnectDatabase function create a new connection to the database
-func ConnectDatabase() *mongo.Client {
+func ConnectDatabase(cn string) *mongo.Client {
 	// create a deadline
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// connect to database
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cn))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -30,4 +28,8 @@ func ConnectDatabase() *mongo.Client {
 	}
 
 	return client
+}
+
+func GetCollection(client *mongo.Client, cn string) *mongo.Collection{
+	return client.Database("BOOK-STORE").Collection(cn)
 }

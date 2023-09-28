@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"book-store-be/database"
+	db "book-store-be/database"
 	"book-store-be/models"
 	"book-store-be/responses"
 	"context"
@@ -14,7 +14,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var bookCollection *mongo.Collection = database.ConnectDatabase().Database("BOOK-STORE").Collection("Books")
+type MongoClient struct{
+	Db *mongo.Client
+}
+
+//var bookCollection *mongo.Collection = database.ConnectDatabase().Database("BOOK-STORE").Collection("Books")
 var validate *validator.Validate = validator.New()
 
 // PostBook godoc
@@ -31,7 +35,7 @@ var validate *validator.Validate = validator.New()
 //	@Router			/book/ [post]
 //
 // PostBook function add new book
-func PostBook(c *gin.Context) {
+func (mc *MongoClient)PostBook(c *gin.Context) {
 	// create a deadline
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -49,6 +53,9 @@ func PostBook(c *gin.Context) {
 		responses.ResponseMessage(c, http.StatusInternalServerError, "error: " + validationError.Error())
 		return
 	}
+
+	// Get collection
+	bookCollection := db.GetCollection(mc.Db, "Books")
 
 	// adds new book
 	_, err := bookCollection.InsertOne(ctx, book)
@@ -75,7 +82,7 @@ func PostBook(c *gin.Context) {
 //	@Router			/book/{title} [get]
 //
 // GetBook function that return a JSON with detail book
-func GetBook(c *gin.Context) {
+func (mc *MongoClient)GetBook(c *gin.Context) {
 	// create a deadline
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -89,6 +96,8 @@ func GetBook(c *gin.Context) {
 		Key:   "titolo",
 		Value: bookTitle,
 	}}
+	// Get collection
+	bookCollection := db.GetCollection(mc.Db, "Books")
 
 	// finds a book with same "Titolo"
 	err := bookCollection.FindOne(ctx, filter).Decode(&book)
