@@ -12,7 +12,7 @@ func BookRoutes(r *gin.RouterGroup) {
 		book := v1.Group("/book")
 		{
 			// GET request
-			book.GET("/:titolo", controllers.GetBook)
+			book.GET("/:title", controllers.GetBook)
 
 			// POST request
 			book.POST("/", controllers.PostBook)

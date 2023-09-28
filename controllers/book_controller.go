@@ -17,6 +17,19 @@ import (
 var bookCollection *mongo.Collection = database.ConnectDatabase().Database("BOOK-STORE").Collection("Books")
 var validate *validator.Validate = validator.New()
 
+// PostBook godoc
+//
+//	@Summary	Get a book
+//	@Schemes
+//	@Description	Get details of a book
+//	@Tags			Book
+//	@Accept			json
+//	@Produce		json
+//	@Param			models.Book	body		models.Book	true "Add new book"
+//	@Success		200			{object}	responses.ResponseJSON
+//	@Failure		500			{object}	responses.ResponseJSON
+//	@Router			/book/ [post]
+//
 // PostBook function add new book
 func PostBook(c *gin.Context) {
 	// create a deadline
@@ -47,6 +60,20 @@ func PostBook(c *gin.Context) {
 	responses.ResponseMessage(c, http.StatusOK, "success", "added new book")
 }
 
+// GetBook godoc
+//
+//	@Summary	Get a book
+//	@Schemes
+//	@Description	Get details of a book
+//	@Tags			Book
+//	@Accept			json
+//	@Produce		json
+//	@Param			title	path		string	true	"Title of the book"
+//	@Success		200		{object}	responses.ResponseJSON
+//	@Failure		404		{object}	responses.ResponseJSON
+//	@Failure		500		{object}	responses.ResponseJSON
+//	@Router			/book/{title} [get]
+//
 // GetBook function that return a JSON with detail book
 func GetBook(c *gin.Context) {
 	// create a deadline
@@ -55,7 +82,7 @@ func GetBook(c *gin.Context) {
 
 	//utilizziamo gli endpoint non gli header
 	bookTitle := c.Param("title")
-	
+
 	// set filter
 	var book models.Book
 	filter := bson.D{{
@@ -66,7 +93,7 @@ func GetBook(c *gin.Context) {
 	// finds a book with same "Titolo"
 	err := bookCollection.FindOne(ctx, filter).Decode(&book)
 	if err == mongo.ErrNoDocuments {
-		responses.ResponseMessage(c, http.StatusInternalServerError, "error", "book not found")
+		responses.ResponseMessage(c, http.StatusNotFound, "error", "book not found")
 		return
 	} else if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, "error", err.Error())

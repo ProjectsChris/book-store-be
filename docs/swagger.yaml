@@ -1,0 +1,115 @@
+basePath: /api/v1
+definitions:
+  models.Book:
+    properties:
+      autore:
+        type: string
+      categoria:
+        type: string
+      copertina:
+        type: string
+      genere:
+        type: string
+      id_copertina:
+        type: string
+      prezzo:
+        type: number
+      quantita:
+        maximum: 5
+        minimum: 1
+        type: integer
+      summary:
+        maxLength: 512
+        type: string
+      titolo:
+        maxLength: 255
+        type: string
+    required:
+    - autore
+    - categoria
+    - copertina
+    - genere
+    - id_copertina
+    - prezzo
+    - quantita
+    - summary
+    - titolo
+    type: object
+  responses.ResponseJSON:
+    properties:
+      data: {}
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+host: 192.168.3.8:8080
+info:
+  contact:
+    email: chrisd3v3l0p3r@gmail.com
+    name: Chris Developer
+    url: http://www.swagger.io/support
+  description: This API manage a cart
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Book Store API
+  version: "1.0"
+paths:
+  /book/:
+    post:
+      consumes:
+      - application/json
+      description: Get details of a book
+      parameters:
+      - description: Add new book
+        in: body
+        name: models.Book
+        required: true
+        schema:
+          $ref: '#/definitions/models.Book'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ResponseJSON'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ResponseJSON'
+      summary: Get a book
+      tags:
+      - Book
+  /book/{title}:
+    get:
+      consumes:
+      - application/json
+      description: Get details of a book
+      parameters:
+      - description: Title of the book
+        in: path
+        name: title
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ResponseJSON'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.ResponseJSON'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ResponseJSON'
+      summary: Get a book
+      tags:
+      - Book
+swagger: "2.0"

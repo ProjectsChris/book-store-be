@@ -1,0 +1,167 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This API manage a cart",
+        "title": "Book Store API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "Chris Developer",
+            "url": "http://www.swagger.io/support",
+            "email": "chrisd3v3l0p3r@gmail.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "192.168.3.8:8080",
+    "basePath": "/api/v1",
+    "paths": {
+        "/book/": {
+            "post": {
+                "description": "Get details of a book",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Book"
+                ],
+                "summary": "Get a book",
+                "parameters": [
+                    {
+                        "description": "Add new book",
+                        "name": "models.Book",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Book"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ResponseJSON"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ResponseJSON"
+                        }
+                    }
+                }
+            }
+        },
+        "/book/{title}": {
+            "get": {
+                "description": "Get details of a book",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Book"
+                ],
+                "summary": "Get a book",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Title of the book",
+                        "name": "title",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ResponseJSON"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ResponseJSON"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ResponseJSON"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.Book": {
+            "type": "object",
+            "required": [
+                "autore",
+                "categoria",
+                "copertina",
+                "genere",
+                "id_copertina",
+                "prezzo",
+                "quantita",
+                "summary",
+                "titolo"
+            ],
+            "properties": {
+                "autore": {
+                    "type": "string"
+                },
+                "categoria": {
+                    "type": "string"
+                },
+                "copertina": {
+                    "type": "string"
+                },
+                "genere": {
+                    "type": "string"
+                },
+                "id_copertina": {
+                    "type": "string"
+                },
+                "prezzo": {
+                    "type": "number"
+                },
+                "quantita": {
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
+                },
+                "summary": {
+                    "type": "string",
+                    "maxLength": 512
+                },
+                "titolo": {
+                    "type": "string",
+                    "maxLength": 255
+                }
+            }
+        },
+        "responses.ResponseJSON": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}
