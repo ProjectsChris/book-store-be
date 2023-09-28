@@ -26,8 +26,8 @@ var validate *validator.Validate = validator.New()
 //	@Accept			json
 //	@Produce		json
 //	@Param			models.Book	body		models.Book	true "Add new book"
-//	@Success		200			{object}	responses.ResponseJSON
-//	@Failure		500			{object}	responses.ResponseJSON
+//	@Success		200			{object}	models.Book
+//	@Failure		500			{object}	responses.ResponseErrorJSON
 //	@Router			/book/ [post]
 //
 // PostBook function add new book
@@ -39,25 +39,25 @@ func PostBook(c *gin.Context) {
 	// take values from body
 	var book models.Book
 	if err := c.BindJSON(&book); err != nil {
-		responses.ResponseMessage(c, http.StatusInternalServerError, "error", err.Error())
+		responses.ResponseMessage(c, http.StatusInternalServerError, "error: " +  err.Error())
 		return
 	}
 
 	// check validator
 	validationError := validate.Struct(&book)
 	if validationError != nil {
-		responses.ResponseMessage(c, http.StatusInternalServerError, "error", validationError.Error())
+		responses.ResponseMessage(c, http.StatusInternalServerError, "error: " + validationError.Error())
 		return
 	}
 
 	// adds new book
 	_, err := bookCollection.InsertOne(ctx, book)
 	if err != nil {
-		responses.ResponseMessage(c, http.StatusInternalServerError, "error", err.Error())
+		responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+ err.Error())
 		return
 	}
 
-	responses.ResponseMessage(c, http.StatusOK, "success", "added new book")
+	responses.ResponseMessage(c, http.StatusOK, "success: added new book")
 }
 
 // GetBook godoc
@@ -69,9 +69,9 @@ func PostBook(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			title	path		string	true	"Title of the book"
-//	@Success		200		{object}	responses.ResponseJSON
-//	@Failure		404		{object}	responses.ResponseJSON
-//	@Failure		500		{object}	responses.ResponseJSON
+//	@Success		200		{object}	models.Book
+//	@Failure		404		{object}	responses.ResponseErrorJSON
+//	@Failure		500		{object}	responses.ResponseErrorJSON
 //	@Router			/book/{title} [get]
 //
 // GetBook function that return a JSON with detail book
@@ -84,7 +84,7 @@ func GetBook(c *gin.Context) {
 	bookTitle := c.Param("title")
 
 	// set filter
-	var book models.Book
+	book := new(models.Book)
 	filter := bson.D{{
 		Key:   "titolo",
 		Value: bookTitle,
@@ -93,12 +93,12 @@ func GetBook(c *gin.Context) {
 	// finds a book with same "Titolo"
 	err := bookCollection.FindOne(ctx, filter).Decode(&book)
 	if err == mongo.ErrNoDocuments {
-		responses.ResponseMessage(c, http.StatusNotFound, "error", "book not found")
+		responses.ResponseMessage(c, http.StatusNotFound, "error: book not found")
 		return
 	} else if err != nil {
-		responses.ResponseMessage(c, http.StatusInternalServerError, "error", err.Error())
+		responses.ResponseMessage(c, http.StatusInternalServerError, "error: " + err.Error())
 		return
 	}
 
-	responses.ResponseMessage(c, http.StatusOK, "success", book)
+	c.JSON(http.StatusOK, &book)
 }
