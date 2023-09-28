@@ -3,7 +3,10 @@ package main
 import (
 	"book-store-be/database"
 	"book-store-be/routes"
+	"net/http"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
@@ -30,6 +33,18 @@ func main() {
 
 	// gin
 	r := gin.Default()
+
+	// CORS middleware
+	var config cors.Config = cors.Config{
+		AllowAllOrigins:  true,
+		AllowMethods:     []string{http.MethodGet, http.MethodPost},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}
+
+	r.Use(cors.New(config))
 
 	// routes
 	routes.BookRoutes(&r.RouterGroup)
