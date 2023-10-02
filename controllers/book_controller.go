@@ -90,13 +90,12 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 			responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
 			return
 		}
-
-		// TODO: checks if book object is empty
-		//if *book == (models.Book{}) {
-		//	responses.ResponseMessage(c, http.StatusNotFound, "book not found")
-		//	return
-		//}
 	}
 
-	c.JSON(http.StatusOK, &book)
+	// check if is an empty struct
+	if *book == (models.Book{}) {
+		responses.ResponseMessage(c, http.StatusNotFound, "book not found")
+	} else {
+		c.JSON(http.StatusOK, &book)
+	}
 }
