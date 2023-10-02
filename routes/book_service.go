@@ -1,14 +1,13 @@
 package routes
 
 import (
-	"book-store-be/controllers"
 	"database/sql"
 
 	"github.com/gin-gonic/gin"
 )
 
 func BookRoutes(r *gin.RouterGroup, db *sql.DB) {
-	sqlDb := new(controllers.DatabaseSql)
+	sqlDb := new(DatabaseSql)
 	sqlDb.Db = db
 
 	v1 := r.Group("/api/v1")

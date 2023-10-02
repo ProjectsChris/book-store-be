@@ -1,4 +1,4 @@
-package controllers
+package routes
 
 import (
 	"book-store-be/models"
