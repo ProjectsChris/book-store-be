@@ -23,6 +23,7 @@ type DbOptions struct {
 }
 
 type DbPostgresOptions struct {
+	Uri      string `yaml:"uri" mapstructure:"uri" json:"uri"`
 	Host     string `yaml:"host" mapstructure:"host" json:"host"`
 	Port     int    `yaml:"port" mapstructure:"port" json:"port"`
 	User     string `yaml:"user" mapstructure:"user" json:"user"`
