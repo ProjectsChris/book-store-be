@@ -35,10 +35,7 @@ func main() {
 		log.Fatal("Impossibile Leggere il file di configurazione")
 	}
 
-	// connect to the database mongodb
-	mongoClient := database.ConnectDatabase(config.Database.ConnectionStringMongoAtlas)
-
-	// create a connection string for postgres
+	// create a connection string
 	connectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		config.Database.ConnectionStringPostgres.Host,
 		config.Database.ConnectionStringPostgres.Port,
@@ -48,8 +45,8 @@ func main() {
 		config.Database.ConnectionStringPostgres.SslMode,
 	)
 
-	// connection to the postgres database
-	_ = database.InitDatabase(connectionString)
+	// connection to the database
+	sqlDatabase := database.InitDatabase(connectionString)
 
 	// gin
 	r := gin.Default()
@@ -68,7 +65,7 @@ func main() {
 	r.Use(cors.New(corsConfig))
 
 	// routes
-	routes.BookRoutes(&r.RouterGroup, mongoClient)
+	routes.BookRoutes(&r.RouterGroup, sqlDatabase)
 
 	// swagger API
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

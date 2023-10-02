@@ -2,25 +2,24 @@ package routes
 
 import (
 	"book-store-be/controllers"
+	"database/sql"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func BookRoutes(r *gin.RouterGroup, db *mongo.Client) {
-
-	mongoClient := new(controllers.MongoClient)
-	mongoClient.Db = db 
+func BookRoutes(r *gin.RouterGroup, db *sql.DB) {
+	sqlDb := new(controllers.DatabaseSql)
+	sqlDb.Db = db
 
 	v1 := r.Group("/api/v1")
 	{
 		book := v1.Group("/book")
 		{
 			// GET request
-			book.GET("/:title", mongoClient.GetBook)
+			//book.GET("/:title", mongoClient.GetBook)
 
 			// POST request
-			book.POST("/", mongoClient.PostBook)
+			book.POST("/", sqlDb.PostBook)
 		}
 	}
 }
