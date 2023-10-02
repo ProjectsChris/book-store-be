@@ -9,10 +9,8 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "Chris Developer",
-            "url": "http://www.swagger.io/support",
             "email": "chrisd3v3l0p3r@gmail.com"
         },
         "license": {
@@ -52,13 +50,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ResponseJSON"
+                            "$ref": "#/definitions/models.Book"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ResponseErrorJSON"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.ResponseJSON"
+                            "$ref": "#/definitions/responses.ResponseErrorJSON"
                         }
                     }
                 }
@@ -90,19 +94,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ResponseJSON"
+                            "$ref": "#/definitions/models.Book"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.ResponseJSON"
+                            "$ref": "#/definitions/responses.ResponseErrorJSON"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.ResponseJSON"
+                            "$ref": "#/definitions/responses.ResponseErrorJSON"
                         }
                     }
                 }
@@ -136,6 +140,9 @@ const docTemplate = `{
                 "genere": {
                     "type": "string"
                 },
+                "id": {
+                    "type": "integer"
+                },
                 "id_copertina": {
                     "type": "string"
                 },
@@ -157,10 +164,9 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.ResponseJSON": {
+        "responses.ResponseErrorJSON": {
             "type": "object",
             "properties": {
-                "data": {},
                 "message": {
                     "type": "string"
                 },
@@ -175,7 +181,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "192.168.3.8:8080",
+	Host:             "192.168.3.8:8000",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Book Store API",

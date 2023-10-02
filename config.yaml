@@ -2,8 +2,6 @@ log:
   level: -1
   enableJson: false
 database:
-  connectionString: mongodb://root:example@192.168.3.107:27017
-  connectionStringMongoAtlas: mongodb+srv://projectschris:D3v3l0p3r2022@cluster0.mbhn7ji.mongodb.net/
   connectionStringPostgres:
     host: localhost
     port: 5432

@@ -19,9 +19,7 @@ type Config struct {
 }
 
 type DbOptions struct {
-	ConnectionString           string            `yaml:"connectionString" mapstructure:"connectionString" json:"connectionString"`
-	ConnectionStringMongoAtlas string            `yaml:"connectionStringMongoAtlas" mapstructure:"connectionStringMongoAtlas" json:"connectionStringMongoAtlas"`
-	ConnectionStringPostgres   DbPostgresOptions `yaml:"connectionStringPostgres" mapstructure:"connectionStringPostgres" json:"connectionStringPostgres"`
+	ConnectionStringPostgres DbPostgresOptions `yaml:"connectionStringPostgres" mapstructure:"connectionStringPostgres" json:"connectionStringPostgres"`
 }
 
 type DbPostgresOptions struct {
@@ -50,9 +48,7 @@ var DefaultConfig = Config{
 		EnableJSON: false,
 	},
 	Database: DbOptions{
-		ConnectionString:           "",
-		ConnectionStringMongoAtlas: "",
-		ConnectionStringPostgres:   DbPostgresOptions{},
+		ConnectionStringPostgres: DbPostgresOptions{},
 	},
 	Observability: ObsOptions{
 		ServiceName: "",

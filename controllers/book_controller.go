@@ -1,30 +1,19 @@
 package controllers
 
 import (
-	db "book-store-be/database"
 	"book-store-be/models"
 	"book-store-be/responses"
-	"context"
 	"database/sql"
-	"net/http"
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"net/http"
 )
-
-type MongoClient struct {
-	Db *mongo.Client
-}
 
 type DatabaseSql struct {
 	Db *sql.DB
 }
 
-// var bookCollection *mongo.Collection = database.ConnectDatabase().Database("BOOK-STORE").Collection("Books")
-var validate *validator.Validate = validator.New()
+var validate = validator.New()
 
 // PostBook godoc
 //
@@ -36,27 +25,28 @@ var validate *validator.Validate = validator.New()
 //	@Produce		json
 //	@Param			models.Book	body		models.Book	true "Add new book"
 //	@Success		200			{object}	models.Book
+//	@Failure		400			{object}	responses.ResponseErrorJSON
 //	@Failure		500			{object}	responses.ResponseErrorJSON
 //	@Router			/book/ [post]
 //
 // PostBook function add new book
-func (dp *DatabaseSql) PostBook(c *gin.Context) {
+func (ds *DatabaseSql) PostBook(c *gin.Context) {
 	// take values from body
 	book := new(models.Book)
 	if err := c.BindJSON(book); err != nil {
-		responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
+		responses.ResponseMessage(c, http.StatusBadRequest, "error: "+err.Error())
 		return
 	}
 
 	// check validator
 	validationError := validate.Struct(book)
 	if validationError != nil {
-		responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+validationError.Error())
+		responses.ResponseMessage(c, http.StatusBadRequest, "error: "+validationError.Error())
 		return
 	}
 
 	query := `INSERT INTO books (title, writer, price, summary, cover, genre, quantity, IdCover) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
-	_, err := dp.Db.Exec(query, book.Titolo, book.Autore, book.Prezzo, book.Summary, book.Copertina, book.Genere, book.Quantita, book.Id)
+	_, err := ds.Db.Exec(query, book.Titolo, book.Autore, book.Prezzo, book.Summary, book.Copertina, book.Genere, book.Quantita, book.IdCopertina)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
 		return
@@ -80,31 +70,32 @@ func (dp *DatabaseSql) PostBook(c *gin.Context) {
 //	@Router			/book/{title} [get]
 //
 // GetBook function that return a JSON with detail book
-func (mc *MongoClient) GetBook(c *gin.Context) {
-	// create a deadline
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	//utilizziamo gli endpoint non gli header
+func (ds *DatabaseSql) GetBook(c *gin.Context) {
+	book := new(models.Book)
 	bookTitle := c.Param("title")
 
-	// set filter
-	book := new(models.Book)
-	filter := bson.D{{
-		Key:   "titolo",
-		Value: bookTitle,
-	}}
-	// Get collection
-	bookCollection := db.GetCollection(mc.Db, "Books")
+	// create a query
+	query := `SELECT * FROM books WHERE id = $1`
 
-	// finds a book with same "Titolo"
-	err := bookCollection.FindOne(ctx, filter).Decode(&book)
-	if err == mongo.ErrNoDocuments {
-		responses.ResponseMessage(c, http.StatusNotFound, "error: book not found")
-		return
-	} else if err != nil {
+	res, err := ds.Db.Query(query, bookTitle)
+	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
 		return
+	}
+	defer res.Close()
+
+	for res.Next() {
+		err = res.Scan(&book.Id, &book.Titolo, &book.Autore, &book.Prezzo, &book.Summary, &book.Copertina, &book.Genere, &book.Quantita, &book.IdCopertina)
+		if err != nil {
+			responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
+			return
+		}
+
+		// TODO: checks if book object is empty
+		//if *book == (models.Book{}) {
+		//	responses.ResponseMessage(c, http.StatusNotFound, "book not found")
+		//	return
+		//}
 	}
 
 	c.JSON(http.StatusOK, &book)

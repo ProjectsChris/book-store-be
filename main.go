@@ -27,7 +27,7 @@ import (
 //	@license.name	Apache 2.0
 //	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host		192.168.3.8:8080
+// @host		192.168.3.8:8000
 // @BasePath	/api/v1
 func main() {
 	config, err := ReadConfig()
