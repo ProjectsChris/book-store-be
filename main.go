@@ -3,6 +3,7 @@ package main
 import (
 	"book-store-be/database"
 	"book-store-be/routes"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -35,17 +36,17 @@ func main() {
 	}
 
 	// create a connection string
-	//connectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-	//	config.Database.ConnectionStringPostgres.Host,
-	//	config.Database.ConnectionStringPostgres.Port,
-	//	config.Database.ConnectionStringPostgres.User,
-	//	config.Database.ConnectionStringPostgres.Password,
-	//	config.Database.ConnectionStringPostgres.DbName,
-	//	config.Database.ConnectionStringPostgres.SslMode,
-	//)
+	connectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		config.Database.ConnectionStringPostgres.Host,
+		config.Database.ConnectionStringPostgres.Port,
+		config.Database.ConnectionStringPostgres.User,
+		config.Database.ConnectionStringPostgres.Password,
+		config.Database.ConnectionStringPostgres.DbName,
+		config.Database.ConnectionStringPostgres.SslMode,
+	)
 
 	// connection to the database
-	sqlDatabase := database.InitDatabase(config.Database.ConnectionStringPostgres.Uri)
+	sqlDatabase := database.InitDatabase(connectionString)
 
 	// gin
 	r := gin.Default()

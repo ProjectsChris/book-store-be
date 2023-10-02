@@ -3,12 +3,12 @@ log:
   enableJson: false
 database:
   connectionStringPostgres:
-    uri: postgres://fxurerfl:R71RUnRpWkRRvpm3gbhUJ3pmlq2FVKoP@flora.db.elephantsql.com/fxurerfl
+    #uri: postgres://fxurerfl:R71RUnRpWkRRvpm3gbhUJ3pmlq2FVKoP@flora.db.elephantsql.com/fxurerfl
     host: flora.db.elephantsql.com
     port: 5432
     user: fxurerfl
     password: R71RUnRpWkRRvpm3gbhUJ3pmlq2FVKoP
-    dbname: book-db
+    dbname: fxurerfl
     sslMode: disable
 observability:
   serviceName:
