@@ -3,13 +3,13 @@ package main
 import (
 	_ "embed"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"os"
 
 	util "book-store-be/utils"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -17,8 +17,20 @@ type Config struct {
 	Database      DbOptions  `yaml:"database" mapstructure:"database" json:"database"`
 	Observability ObsOptions `yaml:"observability" mapstructure:"observability" json:"observability"`
 }
+
 type DbOptions struct {
-	ConnectionString string `yaml:"connectionString" mapstructure:"connectionString" json:"connectionString"`
+	ConnectionString           string            `yaml:"connectionString" mapstructure:"connectionString" json:"connectionString"`
+	ConnectionStringMongoAtlas string            `yaml:"connectionStringMongoAtlas" mapstructure:"connectionStringMongoAtlas" json:"connectionStringMongoAtlas"`
+	ConnectionStringPostgres   DbPostgresOptions `yaml:"connectionStringPostgres" mapstructure:"connectionStringPostgres" json:"connectionStringPostgres"`
+}
+
+type DbPostgresOptions struct {
+	Host     string `yaml:"host" mapstructure:"host" json:"host"`
+	Port     int    `yaml:"port" mapstructure:"port" json:"port"`
+	User     string `yaml:"user" mapstructure:"user" json:"user"`
+	Password string `yaml:"password" mapstructure:"password" json:"password"`
+	DbName   string `yaml:"dbname" mapstructure:"dbname" json:"dbname"`
+	SslMode  string `yaml:"sslMode" mapstructure:"sslMode" json:"sslMode"`
 }
 
 type ObsOptions struct {
@@ -38,7 +50,9 @@ var DefaultConfig = Config{
 		EnableJSON: false,
 	},
 	Database: DbOptions{
-		ConnectionString: "",
+		ConnectionString:           "",
+		ConnectionStringMongoAtlas: "",
+		ConnectionStringPostgres:   DbPostgresOptions{},
 	},
 	Observability: ObsOptions{
 		ServiceName: "",

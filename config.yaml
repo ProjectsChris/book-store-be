@@ -3,6 +3,14 @@ log:
   enableJson: false
 database:
   connectionString: mongodb://root:example@192.168.3.107:27017
+  connectionStringMongoAtlas: mongodb+srv://projectschris:D3v3l0p3r2022@cluster0.mbhn7ji.mongodb.net/
+  connectionStringPostgres:
+    host: localhost
+    port: 5432
+    user: postgres
+    password: postgres
+    dbname: postgres
+    sslMode: disable
 observability:
   serviceName:
   endpoint:

@@ -3,6 +3,7 @@ package main
 import (
 	"book-store-be/database"
 	"book-store-be/routes"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -29,14 +30,26 @@ import (
 // @host		192.168.3.8:8080
 // @BasePath	/api/v1
 func main() {
-
 	config, err := ReadConfig()
 	if err != nil {
 		log.Fatal("Impossibile Leggere il file di configurazione")
 	}
 
-	// connect to the database
-	mongoClient := database.ConnectDatabase(config.Database.ConnectionString)
+	// connect to the database mongodb
+	mongoClient := database.ConnectDatabase(config.Database.ConnectionStringMongoAtlas)
+
+	// create a connection string for postgres
+	connectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		config.Database.ConnectionStringPostgres.Host,
+		config.Database.ConnectionStringPostgres.Port,
+		config.Database.ConnectionStringPostgres.User,
+		config.Database.ConnectionStringPostgres.Password,
+		config.Database.ConnectionStringPostgres.DbName,
+		config.Database.ConnectionStringPostgres.SslMode,
+	)
+
+	// connection to the postgres database
+	_ = database.InitDatabase(connectionString)
 
 	// gin
 	r := gin.Default()
