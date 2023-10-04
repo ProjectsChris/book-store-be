@@ -3,8 +3,9 @@ package main
 import (
 	_ "embed"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"os"
+
+	"gopkg.in/yaml.v3"
 
 	util "book-store-be/utils"
 

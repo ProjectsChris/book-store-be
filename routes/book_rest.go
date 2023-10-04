@@ -2,11 +2,13 @@ package routes
 
 import (
 	"book-store-be/models"
+	"book-store-be/observability"
 	"book-store-be/responses"
 	"database/sql"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"net/http"
 )
 
 type DatabaseSql struct {
@@ -71,6 +73,10 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 //
 // GetBook function that return a JSON with detail book
 func (ds *DatabaseSql) GetBook(c *gin.Context) {
+	// creates a span
+	_, span := observability.Tracer.Start(c.Request.Context(), "get-book")
+	defer span.End()
+
 	book := new(models.Book)
 	bookTitle := c.Param("title")
 

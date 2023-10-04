@@ -1,6 +1,7 @@
 version: "3.8"
 
 services:
+  # Otel Collector
   otel-collector:
     image: otel/opentelemetry-collector-contrib
     volumes:
@@ -12,3 +13,22 @@ services:
       - 13133:13133 # health_check extension
       - 4317:4317 # OTLP gRPC receiver
       - 4318:4318 # OTLP http receiver
+    environment:
+      - OTEL_SERVICE_NAME="your-service-name"
+    depends_on:
+      - jaeger
+  
+  # Jaeger Tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - 5775:5775/udp
+      - 6831:6831/udp
+      - 6832:6832/udp
+      - 5778:5778
+      - 16686:16686
+      - 14268:14268
+      - 9411:9411
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+  

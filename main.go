@@ -2,6 +2,7 @@ package main
 
 import (
 	"book-store-be/database"
+	"book-store-be/observability"
 	"book-store-be/routes"
 	"fmt"
 	"log"
@@ -69,6 +70,10 @@ func main() {
 
 	// swagger API
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// Open Telemetry
+	observability.InitTracer()
+	observability.InitMetric()
 
 	// run gin
 	r.Run(":8000")
