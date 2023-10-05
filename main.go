@@ -4,6 +4,7 @@ import (
 	"book-store-be/database"
 	"book-store-be/observability"
 	"book-store-be/routes"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -31,10 +32,18 @@ import (
 // @host		192.168.3.8:8000
 // @BasePath	/api/v1
 func main() {
+	// read configuration file
 	config, err := ReadConfig()
 	if err != nil {
 		log.Fatal("Impossibile Leggere il file di configurazione")
 	}
+
+	// Open Telemetry
+	trace, err := observability.InitTracer()
+	if err != nil {
+		panic(err.Error())
+	}
+	defer trace(context.Background())
 
 	// create a connection string
 	connectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
@@ -70,10 +79,6 @@ func main() {
 
 	// swagger API
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	// Open Telemetry
-	observability.InitTracer()
-	observability.InitMetric()
 
 	// run gin
 	r.Run(":8000")

@@ -1,34 +1,25 @@
 version: "3.8"
 
 services:
-  # Otel Collector
+  jaeger-all-in-one:
+    image: 'jaegertracing/all-in-one:1'
+    restart: always
+    ports:
+      - '16686:16686'
+      - '14268'
+      - '14250'
   otel-collector:
-    image: otel/opentelemetry-collector-contrib
+    image: 'otel/opentelemetry-collector-contrib:0.68.0'
+    restart: always
+    command:
+      - '--config=/etc/otel-collector-config.yaml'
     volumes:
-      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+      - './otel-collector-config.yaml:/etc/otel-collector-config.yaml'
     ports:
-      - 1888:1888 # pprof extension
-      - 8888:8888 # Prometheus metrics exposed by the collector
-      - 8889:8889 # Prometheus exporter metrics
-      - 13133:13133 # health_check extension
-      - 4317:4317 # OTLP gRPC receiver
-      - 4318:4318 # OTLP http receiver
-    environment:
-      - OTEL_SERVICE_NAME="your-service-name"
+      - '1888:1888'
+      - '8888:8888'
+      - '8889:8889'
+      - '13133:13133'
+      - '4317:4317'
     depends_on:
-      - jaeger
-  
-  # Jaeger Tracing
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    ports:
-      - 5775:5775/udp
-      - 6831:6831/udp
-      - 6832:6832/udp
-      - 5778:5778
-      - 16686:16686
-      - 14268:14268
-      - 9411:9411
-    environment:
-      - COLLECTOR_OTLP_ENABLED=true
-  
+      - jaeger-all-in-one

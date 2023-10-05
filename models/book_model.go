@@ -10,5 +10,5 @@ type Book struct {
 	Genere      string  `json:"genere" validate:"required,eq=Novel|eq=Fantasy|eq=Business|eq=Psychology|eq=Design|eq=Fiction"`
 	Quantita    int     `json:"quantita" validate:"required,gte=1,lte=5"`
 	Categoria   string  `json:"categoria"  validate:"required,eq=Best Seller|eq=New Releases|eq=Best Offers"`
-	IdCopertina string  `json:"id_copertina" validate:"required"`
+	IdCopertina int     `json:"id_copertina" validate:"required"`
 }

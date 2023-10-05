@@ -51,11 +51,7 @@ require (
 
 require github.com/gin-contrib/cors v1.4.0
 
-require (
-	github.com/lib/pq v1.10.9
-	go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v0.42.0
-	go.opentelemetry.io/otel/sdk/metric v1.19.0
-)
+require github.com/lib/pq v1.10.9
 
 require (
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
@@ -71,9 +67,9 @@ require (
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	go.opentelemetry.io/otel v1.19.0
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.19.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.19.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.19.0
 	go.opentelemetry.io/otel/metric v1.19.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.19.0
-	go.opentelemetry.io/otel/trace v1.19.0
+	go.opentelemetry.io/otel/trace v1.19.0 // indirect
 )

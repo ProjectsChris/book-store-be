@@ -4,6 +4,7 @@ import (
 	"book-store-be/models"
 	"book-store-be/observability"
 	"book-store-be/responses"
+	"context"
 	"database/sql"
 	"net/http"
 
@@ -33,6 +34,10 @@ var validate = validator.New()
 //
 // PostBook function add new book
 func (ds *DatabaseSql) PostBook(c *gin.Context) {
+	t := observability.Tracer
+	_, span := t.Tracer("").Start(context.Background(), "post-book")
+	defer span.End()
+
 	// take values from body
 	book := new(models.Book)
 	if err := c.BindJSON(book); err != nil {
@@ -73,8 +78,8 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 //
 // GetBook function that return a JSON with detail book
 func (ds *DatabaseSql) GetBook(c *gin.Context) {
-	// creates a span
-	_, span := observability.Tracer.Start(c.Request.Context(), "get-book")
+	t := observability.Tracer
+	_, span := t.Tracer("").Start(context.Background(), "get-book")
 	defer span.End()
 
 	book := new(models.Book)

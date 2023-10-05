@@ -1,48 +1,29 @@
-# Receivers
 receivers:
   otlp:
     protocols:
       grpc:
-  jaeger:
-    protocols:
-      grpc:
 
-# Processors
+exporters:
+  jaeger:
+      endpoint: jaeger-all-in-one:14250
+      tls:
+        insecure: true
+
+  logging:
+    verbosity: detailed
+    sampling_initial: 5
+    sampling_thereafter: 200
+
 processors:
   batch:
 
-# Exporters
-exporters:
-  otlp:
-    endpoint: otel-collector:4317
-    tls:
-      insecure: true
-  otlp/jaeger:
-    endpoint: jaeger:4317
-    tls:
-      insecure: true
-
-# Extensions
 extensions:
-  health_check:
-  pprof:
+    health_check:
 
-# Service
 service:
-  extensions: [health_check, pprof]
+  extensions: [health_check]
   pipelines:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/jaeger]
-    metrics:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [otlp]
-    logs:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [otlp]
-  telemetry:
-    logs:
-      level: debug
+      exporters: [jaeger]
