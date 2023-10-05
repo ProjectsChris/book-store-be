@@ -2,17 +2,18 @@ receivers:
   otlp:
     protocols:
       grpc:
+  prometheus:
 
 exporters:
   jaeger:
-      endpoint: jaeger-all-in-one:14250
-      tls:
-        insecure: true
+    endpoint: jaeger-all-in-one:14250
+    tls:
+      insecure: true
+  
+  prometheus:
+    endpoint: 0.0.0.0:8889
 
   logging:
-    verbosity: detailed
-    sampling_initial: 5
-    sampling_thereafter: 200
 
 processors:
   batch:
@@ -27,3 +28,7 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [jaeger]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]

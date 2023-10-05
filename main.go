@@ -32,6 +32,7 @@ import (
 // @host		192.168.3.8:8000
 // @BasePath	/api/v1
 func main() {
+	ctx := context.Background()
 	// read configuration file
 	config, err := ReadConfig()
 	if err != nil {
@@ -39,11 +40,19 @@ func main() {
 	}
 
 	// Open Telemetry
-	trace, err := observability.InitTracer(config.Observability.Endpoint)
+	// trace
+	trace, err := observability.InitTracer(ctx, config.Observability.Endpoint)
 	if err != nil {
 		panic(err.Error())
 	}
 	defer trace(context.Background())
+
+	// metric
+	metric, err := observability.InitMetric(ctx, config.Observability.Endpoint)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer metric(context.Background())
 
 	// create a connection string
 	connectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",

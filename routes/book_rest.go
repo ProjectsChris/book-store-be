@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"go.opentelemetry.io/otel"
 )
 
 type DatabaseSql struct {
@@ -17,6 +18,7 @@ type DatabaseSql struct {
 }
 
 var validate = validator.New()
+var meter = otel.Meter("book-counter")
 
 // PostBook godoc
 //
@@ -59,6 +61,13 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 		return
 	}
 
+	meterCounter, err := meter.Int64Counter("post-book-counter")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	meterCounter.Add(context.Background(), 1)
+
 	responses.ResponseMessage(c, http.StatusOK, "success: added new book")
 }
 
@@ -87,6 +96,13 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 
 	// create a query
 	query := `SELECT * FROM books WHERE id = $1`
+
+	meterCounter, err := meter.Int64Counter("get-book-counter")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	meterCounter.Add(context.Background(), 1)
 
 	res, err := ds.Db.Query(query, bookTitle)
 	if err != nil {
