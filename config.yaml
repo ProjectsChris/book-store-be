@@ -3,6 +3,7 @@ log:
   enableJson: false
 database:
   connectionStringPostgres:
+    # TODO: changes settings
     #uri: postgres://fxurerfl:R71RUnRpWkRRvpm3gbhUJ3pmlq2FVKoP@flora.db.elephantsql.com/fxurerfl
     host: localhost
     port: 5432
@@ -12,5 +13,5 @@ database:
     sslMode: disable
 observability:
   serviceName:
-  endpoint:
+  endpoint: "192.168.3.8:4317"
   enabled:

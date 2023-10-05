@@ -35,14 +35,14 @@ func newTraceProvider(exp sdktrace.SpanExporter, ctx context.Context) (*sdktrace
 }
 
 // Init a tracer
-func InitTracer() (func(context.Context) error, error) {
+func InitTracer(endPoint string) (func(context.Context) error, error) {
 	ctx := context.Background()
 
 	exporter, err := otlptrace.New(
 		ctx,
 		otlptracegrpc.NewClient(
 			otlptracegrpc.WithInsecure(),
-			otlptracegrpc.WithEndpoint("172.20.10.2:4317"),
+			otlptracegrpc.WithEndpoint(endPoint),
 		),
 	)
 	if err != nil {

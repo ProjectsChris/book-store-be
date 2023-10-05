@@ -39,7 +39,7 @@ func main() {
 	}
 
 	// Open Telemetry
-	trace, err := observability.InitTracer()
+	trace, err := observability.InitTracer(config.Observability.Endpoint)
 	if err != nil {
 		panic(err.Error())
 	}
