@@ -2,15 +2,17 @@ package routes
 
 import (
 	"book-store-be/models"
-	"book-store-be/observability"
 	"book-store-be/responses"
 	"context"
 	"database/sql"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 )
 
 type DatabaseSql struct {
@@ -36,8 +38,7 @@ var meter = otel.Meter("book-counter")
 //
 // PostBook function add new book
 func (ds *DatabaseSql) PostBook(c *gin.Context) {
-	t := observability.Tracer
-	_, span := t.Tracer("").Start(context.Background(), "post-book")
+	_, span := otel.Tracer("").Start(context.Background(), "/api/v1/post-book/")
 	defer span.End()
 
 	// take values from body
@@ -67,7 +68,6 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 	}
 
 	meterCounter.Add(context.Background(), 1)
-
 	responses.ResponseMessage(c, http.StatusOK, "success: added new book")
 }
 
@@ -87,8 +87,8 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 //
 // GetBook function that return a JSON with detail book
 func (ds *DatabaseSql) GetBook(c *gin.Context) {
-	t := observability.Tracer
-	_, span := t.Tracer("").Start(context.Background(), "get-book")
+	// create a span
+	_, span := otel.Tracer("").Start(c.Request.Context(), "/api/v1/get-book/id")
 	defer span.End()
 
 	book := new(models.Book)
@@ -97,12 +97,11 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 	// create a query
 	query := `SELECT * FROM books WHERE id = $1`
 
+	// init a meter counter
 	meterCounter, err := meter.Int64Counter("get-book-counter")
 	if err != nil {
 		panic(err.Error())
 	}
-
-	meterCounter.Add(context.Background(), 1)
 
 	res, err := ds.Db.Query(query, bookTitle)
 	if err != nil {
@@ -122,7 +121,15 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 	// check if is an empty struct
 	if *book == (models.Book{}) {
 		responses.ResponseMessage(c, http.StatusNotFound, "book not found")
+
+		meterCounter.Add(c.Request.Context(), 1, metric.WithAttributes(
+			attribute.String("status", strconv.Itoa(http.StatusNotFound)),
+		))
 	} else {
 		c.JSON(http.StatusOK, &book)
+
+		meterCounter.Add(c.Request.Context(), 1, metric.WithAttributes(
+			attribute.String("status", strconv.Itoa(http.StatusOK)),
+		))
 	}
 }

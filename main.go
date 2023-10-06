@@ -33,21 +33,21 @@ import (
 // @BasePath	/api/v1
 func main() {
 	ctx := context.Background()
+
 	// read configuration file
 	config, err := ReadConfig()
 	if err != nil {
 		log.Fatal("Impossibile Leggere il file di configurazione")
 	}
 
-	// Open Telemetry
-	// trace
+	// init trace
 	trace, err := observability.InitTracer(ctx, config.Observability.Endpoint)
 	if err != nil {
 		panic(err.Error())
 	}
-	defer trace(context.Background())
+	defer trace(ctx)
 
-	// metric
+	// init metric
 	metric, err := observability.InitMetric(ctx, config.Observability.Endpoint)
 	if err != nil {
 		panic(err.Error())
