@@ -15,7 +15,7 @@ services:
     command:
       - '--config=/etc/otel-collector-config.yaml'
     volumes:
-      - './otel-collector-config.yaml:/etc/otel-collector-config.yaml'
+      - './configuration/otel-collector-config.yaml:/etc/otel-collector-config.yaml'
     ports:
       - '1888:1888'   # pprof extension
       - '8888:8888'   # Prometheus metrics exposed by the collector
@@ -25,13 +25,13 @@ services:
 
     depends_on:
       - jaeger-all-in-one
-  
+
   prometheus:
     image: 'prom/prometheus:v2.47.1'
     restart: always
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     volumes:
-      - './prometheus.yml:/etc/prometheus.yml'
+      - './configuration/prometheus.yml:/etc/prometheus.yml'
     ports:
       - '9090:9090'
