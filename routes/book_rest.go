@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"book-store-be/database"
 	"book-store-be/models"
 	"book-store-be/responses"
 	"context"
@@ -192,7 +193,7 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 	}
 
 	// query for show a count of all elements into database
-	query = `SELECT COUNT(*) FROM books;`
+	query = database.GET_ALL
 	res, err = ds.Db.Query(query)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())

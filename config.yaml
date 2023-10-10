@@ -12,5 +12,5 @@ database:
     sslMode: disable
 observability:
   serviceName:
-  endpoint: "192.168.3.6:4317" # NOTE - changes IP address
+  endpoint: "192.168.3.7:4317" # NOTE - changes IP address
   enabled:
