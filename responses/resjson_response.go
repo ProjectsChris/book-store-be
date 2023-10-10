@@ -1,6 +1,7 @@
 package responses
 
 import (
+	"book-store-be/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,4 +16,15 @@ func ResponseMessage(c *gin.Context, status int, msg string) {
 		Status:  status,
 		Message: msg,
 	})
+}
+
+type ResponseDatabase struct {
+	Data       []models.Book `json:"data"`
+	Pagination Pagination    `json:"paging"`
+}
+
+type Pagination struct {
+	TotalRecord int `json:"total_record"`
+	Page        int `json:"page"`
+	TotalPages  int `json:"total_pages"`
 }

@@ -150,15 +150,19 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 //
 // GetBooks function that return a JSON with all books
 func (ds *DatabaseSql) GetBooks(c *gin.Context) {
+	var query string
 	var bookList []models.Book
+
+	counter := 0
 	book := new(models.Book)
 
 	// create a span
 	_, span := otel.Tracer("").Start(c.Request.Context(), "/api/v1/book/")
 	defer span.End()
 
-	// create a query
-	query := `SELECT * FROM books;`
+	// query param
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "0"))
+	limitShowRecord := 5
 
 	// init a meter counter
 	meterCounter, err := meter.Int64Counter("get-books-counter")
@@ -166,13 +170,14 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 		panic(err.Error())
 	}
 
-	// execute query
-	res, err := ds.Db.Query(query)
+	// create a query
+	query = `SELECT * FROM books ORDER BY id DESC LIMIT $1 OFFSET $2;`
+
+	res, err := ds.Db.Query(query, limitShowRecord, limitShowRecord*page)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
 		return
 	}
-	defer res.Close()
 
 	// execute all books
 	for res.Next() {
@@ -185,9 +190,33 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 		bookList = append(bookList, *book)
 	}
 
+	// query for show a count of all elements into database
+	query = `SELECT COUNT(*) FROM books;`
+	res, err = ds.Db.Query(query)
+	if err != nil {
+		responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
+		return
+	}
+	defer res.Close()
+
+	for res.Next() {
+		err = res.Scan(&counter)
+		if err != nil {
+			responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
+			return
+		}
+	}
+
 	// check length of the list
 	if len(bookList) > 0 {
-		c.JSON(http.StatusOK, bookList)
+		c.JSON(http.StatusOK, responses.ResponseDatabase{
+			Data: bookList,
+			Pagination: responses.Pagination{
+				TotalRecord: counter,
+				Page:        page,
+				TotalPages:  (counter / limitShowRecord) - 1,
+			},
+		})
 
 		meterCounter.Add(c.Request.Context(), 1, metric.WithAttributes(
 			attribute.String("status", strconv.Itoa(http.StatusOK)),
