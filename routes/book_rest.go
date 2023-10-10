@@ -5,6 +5,7 @@ import (
 	"book-store-be/responses"
 	"context"
 	"database/sql"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -24,13 +25,13 @@ var meter = otel.Meter("book-counter")
 
 // PostBook godoc
 //
-//	@Summary	Get a book
+//	@Summary	Adds a book
 //	@Schemes
-//	@Description	Get details of a book
+//	@Description	Adds new book
 //	@Tags			Book
 //	@Accept			json
 //	@Produce		json
-//	@Param			models.Book	body		models.Book	true	"Add new book"
+//	@Param			models.Book	body		models.Book	true	"Adds new book"
 //	@Success		200			{object}	models.Book
 //	@Failure		400			{object}	responses.ResponseErrorJSON
 //	@Failure		500			{object}	responses.ResponseErrorJSON
@@ -139,13 +140,14 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 //
 //	@Summary	Get books
 //	@Schemes
-//	@Description	Get all details for every book
+//	@Description	Get details for every book
 //	@Tags			Book
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	models.Book
-//	@Failure		404	{object}	responses.ResponseErrorJSON
-//	@Failure		500	{object}	responses.ResponseErrorJSON
+//	@Param			page	query		string	true	"Number of the pagination"
+//	@Success		200		{object}	responses.ResponseDatabase  // TODO: fix type
+//	@Failure		404		{object}	responses.ResponseErrorJSON
+//	@Failure		500		{object}	responses.ResponseErrorJSON
 //	@Router			/book [get]
 //
 // GetBooks function that return a JSON with all books
@@ -153,8 +155,8 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 	var query string
 	var bookList []models.Book
 
-	counter := 0
 	book := new(models.Book)
+	counter := 0
 
 	// create a span
 	_, span := otel.Tracer("").Start(c.Request.Context(), "/api/v1/book/")
@@ -162,7 +164,6 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 
 	// query param
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "0"))
-	limitShowRecord := 5
 
 	// init a meter counter
 	meterCounter, err := meter.Int64Counter("get-books-counter")
@@ -170,10 +171,10 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 		panic(err.Error())
 	}
 
-	// create a query
-	query = `SELECT * FROM books ORDER BY id DESC LIMIT $1 OFFSET $2;`
+	// creates a query
+	query = `SELECT * FROM books ORDER BY id DESC LIMIT 10 OFFSET $1;`
 
-	res, err := ds.Db.Query(query, limitShowRecord, limitShowRecord*page)
+	res, err := ds.Db.Query(query, 10*page)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
 		return
@@ -211,18 +212,17 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 	if len(bookList) > 0 {
 		c.JSON(http.StatusOK, responses.ResponseDatabase{
 			Data: bookList,
-			Pagination: responses.Pagination{
+			Pagination: responses.PaginationDatabase{
 				TotalRecord: counter,
 				Page:        page,
-				TotalPages:  (counter / limitShowRecord) - 1,
-			},
-		})
+				TotalPages:  int(math.Ceil(float64(counter)/10.0)) - 1,
+			}})
 
 		meterCounter.Add(c.Request.Context(), 1, metric.WithAttributes(
 			attribute.String("status", strconv.Itoa(http.StatusOK)),
 		))
 	} else {
-		responses.ResponseMessage(c, http.StatusNotFound, "There are not books")
+		responses.ResponseMessage(c, http.StatusNotFound, "There aren't books")
 
 		meterCounter.Add(c.Request.Context(), 1, metric.WithAttributes(
 			attribute.String("status", strconv.Itoa(http.StatusNotFound)),

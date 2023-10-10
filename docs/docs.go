@@ -24,7 +24,7 @@ const docTemplate = `{
     "paths": {
         "/book": {
             "get": {
-                "description": "Get all details for every book",
+                "description": "Get details for every book",
                 "consumes": [
                     "application/json"
                 ],
@@ -35,11 +35,20 @@ const docTemplate = `{
                     "Book"
                 ],
                 "summary": "Get books",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Number of the pagination",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Book"
+                            "$ref": "#/definitions/responses.ResponseDatabase"
                         }
                     },
                     "404": {
@@ -59,7 +68,7 @@ const docTemplate = `{
         },
         "/book/": {
             "post": {
-                "description": "Get details of a book",
+                "description": "Adds new book",
                 "consumes": [
                     "application/json"
                 ],
@@ -69,10 +78,10 @@ const docTemplate = `{
                 "tags": [
                     "Book"
                 ],
-                "summary": "Get a book",
+                "summary": "Adds a book",
                 "parameters": [
                     {
-                        "description": "Add new book",
+                        "description": "Adds new book",
                         "name": "models.Book",
                         "in": "body",
                         "required": true,
@@ -199,6 +208,34 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.PaginationDatabase": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                },
+                "total_record": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.ResponseDatabase": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Book"
+                    }
+                },
+                "paging": {
+                    "$ref": "#/definitions/responses.PaginationDatabase"
+                }
+            }
+        },
         "responses.ResponseErrorJSON": {
             "type": "object",
             "properties": {
@@ -216,7 +253,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "192.168.3.8:8000",
+	Host:             "192.168.3.6:8000",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Book Store API",

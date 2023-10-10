@@ -19,11 +19,11 @@ func ResponseMessage(c *gin.Context, status int, msg string) {
 }
 
 type ResponseDatabase struct {
-	Data       []models.Book `json:"data"`
-	Pagination Pagination    `json:"paging"`
+	Data       []models.Book      `json:"data"`
+	Pagination PaginationDatabase `json:"paging"`
 }
 
-type Pagination struct {
+type PaginationDatabase struct {
 	TotalRecord int `json:"total_record"`
 	Page        int `json:"page"`
 	TotalPages  int `json:"total_pages"`

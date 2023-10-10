@@ -37,6 +37,24 @@ definitions:
     - summary
     - titolo
     type: object
+  responses.PaginationDatabase:
+    properties:
+      page:
+        type: integer
+      total_pages:
+        type: integer
+      total_record:
+        type: integer
+    type: object
+  responses.ResponseDatabase:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Book'
+        type: array
+      paging:
+        $ref: '#/definitions/responses.PaginationDatabase'
+    type: object
   responses.ResponseErrorJSON:
     properties:
       message:
@@ -44,7 +62,7 @@ definitions:
       status:
         type: integer
     type: object
-host: 192.168.3.8:8000
+host: 192.168.3.6:8000
 info:
   contact:
     email: chrisd3v3l0p3r@gmail.com
@@ -60,14 +78,20 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get all details for every book
+      description: Get details for every book
+      parameters:
+      - description: Number of the pagination
+        in: query
+        name: page
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Book'
+            $ref: '#/definitions/responses.ResponseDatabase'
         "404":
           description: Not Found
           schema:
@@ -83,9 +107,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Get details of a book
+      description: Adds new book
       parameters:
-      - description: Add new book
+      - description: Adds new book
         in: body
         name: models.Book
         required: true
@@ -106,7 +130,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ResponseErrorJSON'
-      summary: Get a book
+      summary: Adds a book
       tags:
       - Book
   /book/{title}:
