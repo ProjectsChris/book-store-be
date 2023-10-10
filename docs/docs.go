@@ -22,6 +22,41 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/book": {
+            "get": {
+                "description": "Get all details for every book",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Book"
+                ],
+                "summary": "Get books",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Book"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ResponseErrorJSON"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ResponseErrorJSON"
+                        }
+                    }
+                }
+            }
+        },
         "/book/": {
             "post": {
                 "description": "Get details of a book",
@@ -144,7 +179,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "id_copertina": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "prezzo": {
                     "type": "number"

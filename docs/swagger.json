@@ -16,6 +16,41 @@
     "host": "192.168.3.8:8000",
     "basePath": "/api/v1",
     "paths": {
+        "/book": {
+            "get": {
+                "description": "Get all details for every book",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Book"
+                ],
+                "summary": "Get books",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Book"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ResponseErrorJSON"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ResponseErrorJSON"
+                        }
+                    }
+                }
+            }
+        },
         "/book/": {
             "post": {
                 "description": "Get details of a book",
@@ -138,7 +173,7 @@
                     "type": "integer"
                 },
                 "id_copertina": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "prezzo": {
                     "type": "number"

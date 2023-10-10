@@ -30,7 +30,7 @@ var meter = otel.Meter("book-counter")
 //	@Tags			Book
 //	@Accept			json
 //	@Produce		json
-//	@Param			models.Book	body		models.Book	true "Add new book"
+//	@Param			models.Book	body		models.Book	true	"Add new book"
 //	@Success		200			{object}	models.Book
 //	@Failure		400			{object}	responses.ResponseErrorJSON
 //	@Failure		500			{object}	responses.ResponseErrorJSON
@@ -38,7 +38,7 @@ var meter = otel.Meter("book-counter")
 //
 // PostBook function add new book
 func (ds *DatabaseSql) PostBook(c *gin.Context) {
-	_, span := otel.Tracer("").Start(context.Background(), "/api/v1/post-book/")
+	_, span := otel.Tracer("").Start(context.Background(), "/api/v1/book/")
 	defer span.End()
 
 	// take values from body
@@ -55,8 +55,8 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 		return
 	}
 
-	query := `INSERT INTO books (title, writer, price, summary, cover, genre, quantity, IdCover) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
-	_, err := ds.Db.Exec(query, book.Titolo, book.Autore, book.Prezzo, book.Summary, book.Copertina, book.Genere, book.Quantita, book.IdCopertina)
+	query := `INSERT INTO books (title, writer, price, summary, cover, genre, quantity, category, IdCover) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
+	_, err := ds.Db.Exec(query, book.Titolo, book.Autore, book.Prezzo, book.Summary, book.Copertina, book.Genere, book.Quantita, book.Categoria, book.IdCopertina)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
 		return
@@ -89,7 +89,7 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 // GetBook function that return a JSON with detail book
 func (ds *DatabaseSql) GetBook(c *gin.Context) {
 	// create a span
-	_, span := otel.Tracer("").Start(c.Request.Context(), "/api/v1/get-book/id")
+	_, span := otel.Tracer("").Start(c.Request.Context(), "/api/v1/book/id")
 	defer span.End()
 
 	book := new(models.Book)
@@ -112,7 +112,7 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 	defer res.Close()
 
 	for res.Next() {
-		err = res.Scan(&book.Id, &book.Titolo, &book.Autore, &book.Prezzo, &book.Summary, &book.Copertina, &book.Genere, &book.Quantita, &book.IdCopertina)
+		err = res.Scan(&book.Id, &book.Titolo, &book.Autore, &book.Prezzo, &book.Summary, &book.Copertina, &book.Genere, &book.Quantita, &book.Categoria, &book.IdCopertina)
 		if err != nil {
 			responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
 			return
@@ -131,6 +131,72 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 
 		meterCounter.Add(c.Request.Context(), 1, metric.WithAttributes(
 			attribute.String("status", strconv.Itoa(http.StatusOK)),
+		))
+	}
+}
+
+// GetBooks godoc
+//
+//	@Summary	Get books
+//	@Schemes
+//	@Description	Get all details for every book
+//	@Tags			Book
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	models.Book
+//	@Failure		404	{object}	responses.ResponseErrorJSON
+//	@Failure		500	{object}	responses.ResponseErrorJSON
+//	@Router			/book [get]
+//
+// GetBooks function that return a JSON with all books
+func (ds *DatabaseSql) GetBooks(c *gin.Context) {
+	var bookList []models.Book
+	book := new(models.Book)
+
+	// create a span
+	_, span := otel.Tracer("").Start(c.Request.Context(), "/api/v1/book/")
+	defer span.End()
+
+	// create a query
+	query := `SELECT * FROM books;`
+
+	// init a meter counter
+	meterCounter, err := meter.Int64Counter("get-books-counter")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	// execute query
+	res, err := ds.Db.Query(query)
+	if err != nil {
+		responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
+		return
+	}
+	defer res.Close()
+
+	// execute all books
+	for res.Next() {
+		err = res.Scan(&book.Id, &book.Titolo, &book.Autore, &book.Prezzo, &book.Summary, &book.Copertina, &book.Genere, &book.Quantita, &book.Categoria, &book.IdCopertina)
+		if err != nil {
+			responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
+			return
+		}
+
+		bookList = append(bookList, *book)
+	}
+
+	// check length of the list
+	if len(bookList) > 0 {
+		c.JSON(http.StatusOK, bookList)
+
+		meterCounter.Add(c.Request.Context(), 1, metric.WithAttributes(
+			attribute.String("status", strconv.Itoa(http.StatusOK)),
+		))
+	} else {
+		responses.ResponseMessage(c, http.StatusNotFound, "There are not books")
+
+		meterCounter.Add(c.Request.Context(), 1, metric.WithAttributes(
+			attribute.String("status", strconv.Itoa(http.StatusNotFound)),
 		))
 	}
 }

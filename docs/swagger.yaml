@@ -13,7 +13,7 @@ definitions:
       id:
         type: integer
       id_copertina:
-        type: string
+        type: integer
       prezzo:
         type: number
       quantita:
@@ -56,6 +56,29 @@ info:
   title: Book Store API
   version: "1.0"
 paths:
+  /book:
+    get:
+      consumes:
+      - application/json
+      description: Get all details for every book
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Book'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.ResponseErrorJSON'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ResponseErrorJSON'
+      summary: Get books
+      tags:
+      - Book
   /book/:
     post:
       consumes:

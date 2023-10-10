@@ -16,6 +16,7 @@ func BookRoutes(r *gin.RouterGroup, db *sql.DB) {
 		{
 			// GET request
 			book.GET("/:title", sqlDb.GetBook)
+			book.GET("/", sqlDb.GetBooks)
 
 			// POST request
 			book.POST("/", sqlDb.PostBook)
