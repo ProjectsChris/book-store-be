@@ -32,6 +32,7 @@ import (
 // @host		192.168.3.8:8000
 // @BasePath	/api/v1
 func main() {
+	// init a context
 	ctx := context.Background()
 
 	// read configuration file
@@ -40,19 +41,19 @@ func main() {
 		log.Fatal("Impossibile Leggere il file di configurazione")
 	}
 
-	// init trace
+	// init tracer
 	trace, err := observability.InitTracer(ctx, config.Observability.Endpoint)
 	if err != nil {
-		panic(err.Error())
+		panic("trace error" + err.Error())
 	}
 	defer trace(ctx)
 
 	// init metric
 	metric, err := observability.InitMetric(ctx, config.Observability.Endpoint)
 	if err != nil {
-		panic(err.Error())
+		panic("metric error" + err.Error())
 	}
-	defer metric(context.Background())
+	defer metric(ctx)
 
 	// create a connection string
 	connectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",

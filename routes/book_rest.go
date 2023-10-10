@@ -62,12 +62,13 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 		return
 	}
 
+	// init a metric
 	meterCounter, err := meter.Int64Counter("post-book-counter")
 	if err != nil {
 		panic(err.Error())
 	}
 
-	meterCounter.Add(context.Background(), 1)
+	meterCounter.Add(c.Request.Context(), 1)
 	responses.ResponseMessage(c, http.StatusOK, "success: added new book")
 }
 
