@@ -1,0 +1,124 @@
+---
+# Source: book-store-be/templates/config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-book-store-be-config
+data:
+  config.yaml: |-
+      database:
+        connectionStringPostgres:
+          dbname: fxurerfl
+          host: flora.db.elephantsql.com
+          password: R71RUnRpWkRRvpm3gbhUJ3pmlq2FVKoP
+          port: 5432
+          sslMode: disable
+          user: fxurerfl
+      log:
+        enableJson: false
+        level: -1
+      observability:
+        enabled: null
+        endpoint: 192.168.3.6:4317
+        serviceName: null
+---
+# Source: book-store-be/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-book-store-be
+  labels:
+    helm.sh/chart: book-store-be-0.1.0
+    app.kubernetes.io/name: book-store-be
+    app.kubernetes.io/instance: test
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: book-store-be
+    app.kubernetes.io/instance: test
+---
+# Source: book-store-be/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-book-store-be
+  labels:
+    helm.sh/chart: book-store-be-0.1.0
+    app.kubernetes.io/name: book-store-be
+    app.kubernetes.io/instance: test
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: book-store-be
+      app.kubernetes.io/instance: test
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: book-store-be
+        app.kubernetes.io/instance: test
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: book-store-be
+          securityContext:
+            {}
+          image: "nginx:1.16.0"
+          env:
+            - name: BOOK_STORE_BE_FILE_PATH
+              value: "/deployments/config/config.yaml"
+
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {}
+          volumeMounts:
+            - name: configvolume
+              mountPath: /deployments/config/
+    volumes:
+      - name: configvolume
+        configMap:
+          name: test-book-store-be-config
+---
+# Source: book-store-be/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "test-book-store-be-test-connection"
+  labels:
+    helm.sh/chart: book-store-be-0.1.0
+    app.kubernetes.io/name: book-store-be
+    app.kubernetes.io/instance: test
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['test-book-store-be:8000']
+  restartPolicy: Never
