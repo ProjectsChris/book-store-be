@@ -1,9 +1,18 @@
 version: "3.8"
 
 services:
+  # Book Store Backend
+  book-store-be:
+    image: 'chrisdeveloper2023/book-store-be'
+    container_name: 'book-store-be_gin'
+    build: .
+    ports:
+      - '8000:8000'
+
   # Jaeger All In One
   jaeger-all-in-one:
     image: 'jaegertracing/all-in-one:1'
+    container_name: 'book-store-be_jaeger-all-in-one'
     restart: always
     ports:
       - '16686:16686'
@@ -13,6 +22,7 @@ services:
   # Otel Collector
   otel-collector:
     image: 'otel/opentelemetry-collector-contrib:0.68.0'
+    container_name: 'book-store-be_otel-collector'
     restart: always
     command:
       - '--config=/etc/otel-collector-config.yaml'
@@ -31,6 +41,7 @@ services:
   # Prometheus
   prometheus:
     image: 'prom/prometheus:v2.47.1'
+    container_name: 'book-store-be_prometheus'
     restart: always
     command:
       - '--config.file=/etc/prometheus/prometheus.yaml'
@@ -42,6 +53,7 @@ services:
   # Grafana
   grafana:
     image: 'grafana/grafana:9.0.1'
+    container_name: 'book-store-be_grafana'
     restart: always
     volumes:
       - ./configuration/grafana/grafana.ini:/etc/grafana/grafana.ini
