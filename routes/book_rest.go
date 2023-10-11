@@ -37,7 +37,7 @@ var meter = otel.Meter("book-counter")
 //	@Failure		400			{object}	responses.ResponseErrorJSON
 //	@Failure		500			{object}	responses.ResponseErrorJSON
 //	@Router			/book/ [post]
-//
+
 // PostBook method add new book
 func (ds *DatabaseSql) PostBook(c *gin.Context) {
 	book := new(models.Book)
@@ -100,7 +100,7 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 //	@Failure		404	{object}	responses.ResponseErrorJSON
 //	@Failure		500	{object}	responses.ResponseErrorJSON
 //	@Router			/book/{id} [get]
-//
+
 // GetBook method return detail of a specific book with same id
 func (ds *DatabaseSql) GetBook(c *gin.Context) {
 	book := new(models.Book)
@@ -126,7 +126,18 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 
 	// search result of the query
 	for res.Next() {
-		err = res.Scan(&book.Id, &book.Titolo, &book.Autore, &book.Prezzo, &book.Summary, &book.Copertina, &book.Genere, &book.Quantita, &book.Categoria, &book.IdCopertina)
+		err = res.Scan(
+			&book.Id,
+			&book.Titolo,
+			&book.Autore,
+			&book.Prezzo,
+			&book.Summary,
+			&book.Copertina,
+			&book.Genere,
+			&book.Quantita,
+			&book.Categoria,
+			&book.IdCopertina,
+		)
 		if err != nil {
 			responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
 			return
@@ -161,10 +172,10 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 //	@Failure		404		{object}	responses.ResponseErrorJSON
 //	@Failure		500		{object}	responses.ResponseErrorJSON
 //	@Router			/book [get]
-//
+
 // GetBooks method that return a JSON with all books
 func (ds *DatabaseSql) GetBooks(c *gin.Context) {
-	var bookList []models.Book
+	var bookList *[]models.Book
 
 	book := new(models.Book)
 	counter := 0
@@ -191,13 +202,24 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 
 	// execute result for adds books inside array
 	for res.Next() {
-		err = res.Scan(&book.Id, &book.Titolo, &book.Autore, &book.Prezzo, &book.Summary, &book.Copertina, &book.Genere, &book.Quantita, &book.Categoria, &book.IdCopertina)
+		err = res.Scan(
+			&book.Id,
+			&book.Titolo,
+			&book.Autore,
+			&book.Prezzo,
+			&book.Summary,
+			&book.Copertina,
+			&book.Genere,
+			&book.Quantita,
+			&book.Categoria,
+			&book.IdCopertina,
+		)
 		if err != nil {
 			responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
 			return
 		}
 
-		bookList = append(bookList, *book)
+		*bookList = append(*bookList, *book)
 	}
 
 	// query return a number of all records
@@ -218,14 +240,14 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 	}
 
 	// checks length of the list
-	if len(bookList) > 0 {
+	if len(*bookList) > 0 {
 		meterCounter.Add(c.Request.Context(), 1, metric.WithAttributes(
 			attribute.String("status", strconv.Itoa(http.StatusOK)),
 		))
 
 		c.JSON(http.StatusOK, responses.ResponseDatabase{
-			Data: bookList,
-			Pagination: responses.PaginationDatabase{
+			Data: *bookList,
+			PaginationDatabase: responses.PaginationDatabase{
 				TotalRecord: counter,
 				Page:        page,
 				TotalPages:  int(math.Ceil(float64(counter)/10.0)) - 1,

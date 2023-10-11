@@ -27,6 +27,7 @@ import (
 //	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 //	@host			192.168.3.6:8000
 //	@BasePath		/api/v1
+
 func main() {
 	// creates a context
 	ctx := context.Background()
@@ -70,7 +71,7 @@ func main() {
 	// CORS configuration
 	corsConfig := cors.Config{
 		AllowAllOrigins:  true,
-		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodOptions},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,

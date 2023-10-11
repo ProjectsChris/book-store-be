@@ -7,8 +7,8 @@ import (
 
 // ResponseDatabase type for manage pagination of the database
 type ResponseDatabase struct {
-	Data       []models.Book      `json:"data"`
-	Pagination PaginationDatabase `json:"paging"`
+	Data               []models.Book   `json:"data"`
+	PaginationDatabase `json:"paging"` // struct embedding
 }
 
 type PaginationDatabase struct {
