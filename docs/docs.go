@@ -25,9 +25,6 @@ const docTemplate = `{
         "/book": {
             "get": {
                 "description": "Get details for every book",
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -37,11 +34,10 @@ const docTemplate = `{
                 "summary": "Get books",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Number of the pagination",
                         "name": "page",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -112,7 +108,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/book/{title}": {
+        "/book/{id}": {
             "get": {
                 "description": "Get details of a book",
                 "consumes": [
@@ -127,9 +123,9 @@ const docTemplate = `{
                 "summary": "Get a book",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Title of the book",
-                        "name": "title",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -257,7 +253,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Book Store API",
-	Description:      "This API manage a cart",
+	Description:      "This API manage a cart // TODO: change description",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

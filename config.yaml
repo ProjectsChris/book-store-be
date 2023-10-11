@@ -1,6 +1,7 @@
 log:
   level: -1
   enableJson: false
+
 database:
   connectionStringPostgres:
     #uri: postgres://fxurerfl:R71RUnRpWkRRvpm3gbhUJ3pmlq2FVKoP@flora.db.elephantsql.com/fxurerfl
@@ -10,7 +11,8 @@ database:
     password: R71RUnRpWkRRvpm3gbhUJ3pmlq2FVKoP
     dbname: fxurerfl
     sslMode: disable
+
 observability:
   serviceName:
-  endpoint: "192.168.3.7:4317" # NOTE - changes IP address
+  endpoint: "192.168.3.6:4317" # TODO: check if ip address is correct
   enabled:

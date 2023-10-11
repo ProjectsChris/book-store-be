@@ -10,6 +10,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 )
 
+// InitMetric init new metric
 func InitMetric(ctx context.Context, endPoint string) (func(context.Context) error, error) {
 	res, err := NewResource(ctx)
 	if err != nil {
@@ -25,6 +26,7 @@ func InitMetric(ctx context.Context, endPoint string) (func(context.Context) err
 	return meterProvider.Shutdown, nil
 }
 
+// newMeterProvider create a new meter provider
 func newMeterProvider(ctx context.Context, endPoint string, res *resource.Resource) (*metric.MeterProvider, error) {
 	metricExporter, err := otlpmetricgrpc.New(ctx,
 		otlpmetricgrpc.WithInsecure(),

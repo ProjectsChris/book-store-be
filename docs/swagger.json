@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This API manage a cart",
+        "description": "This API manage a cart // TODO: change description",
         "title": "Book Store API",
         "contact": {
             "name": "Chris Developer",
@@ -19,9 +19,6 @@
         "/book": {
             "get": {
                 "description": "Get details for every book",
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -31,11 +28,10 @@
                 "summary": "Get books",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Number of the pagination",
                         "name": "page",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -106,7 +102,7 @@
                 }
             }
         },
-        "/book/{title}": {
+        "/book/{id}": {
             "get": {
                 "description": "Get details of a book",
                 "consumes": [
@@ -121,9 +117,9 @@
                 "summary": "Get a book",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Title of the book",
-                        "name": "title",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }

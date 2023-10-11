@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-// InitDatabase function create a new connection to the database
+// InitDatabase creates new connection to the database
 func InitDatabase(cn string) *sql.DB {
 	// parsing string
 	// uri, err := pq.ParseURL(cn)
@@ -15,6 +15,7 @@ func InitDatabase(cn string) *sql.DB {
 	if err != nil {
 		log.Fatal("Impossibile connettersi al database")
 	}
+
 	// check database
 	if err = db.Ping(); err != nil {
 		log.Fatal("error: ", err.Error())

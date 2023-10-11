@@ -9,7 +9,7 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
-// Init a tracer
+// InitTracer init a tracer
 func InitTracer(ctx context.Context, endPoint string) (func(context.Context) error, error) {
 	exporter, err := otlptrace.New(ctx, otlptracegrpc.NewClient(
 		otlptracegrpc.WithInsecure(),
@@ -28,7 +28,7 @@ func InitTracer(ctx context.Context, endPoint string) (func(context.Context) err
 	return exporter.Shutdown, nil
 }
 
-// Init a tracer providers
+// newTraceProvider init a new tracer providers
 func newTraceProvider(exp sdktrace.SpanExporter, ctx context.Context) (*sdktrace.TracerProvider, error) {
 	r, err := NewResource(ctx)
 	if err != nil {

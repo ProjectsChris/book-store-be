@@ -1,6 +1,7 @@
 version: "3.8"
 
 services:
+  # Jaeger All In One
   jaeger-all-in-one:
     image: 'jaegertracing/all-in-one:1'
     restart: always
@@ -9,6 +10,7 @@ services:
       - '14268'
       - '14250'
 
+  # Otel Collector
   otel-collector:
     image: 'otel/opentelemetry-collector-contrib:0.68.0'
     restart: always
@@ -26,6 +28,7 @@ services:
       - jaeger-all-in-one
       - prometheus
 
+  # Prometheus
   prometheus:
     image: 'prom/prometheus:v2.47.1'
     restart: always
@@ -35,7 +38,8 @@ services:
       - './configuration/prometheus.yaml:/etc/prometheus/prometheus.yaml'
     ports:
       - '9090:9090'
-  
+
+  # Grafana
   grafana:
     image: 'grafana/grafana:9.0.1'
     restart: always

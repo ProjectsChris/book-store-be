@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// BookRoutes function with all routers of book
 func BookRoutes(r *gin.RouterGroup, db *sql.DB) {
 	sqlDb := new(DatabaseSql)
 	sqlDb.Db = db
