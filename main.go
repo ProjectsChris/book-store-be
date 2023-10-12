@@ -82,7 +82,7 @@ func main() {
 	r.Use(cors.New(corsConfig))
 
 	// routes book
-	routes.BookRoutes(&r.RouterGroup, sqlDatabase)
+	routes.BookRoutes(&r.RouterGroup, sqlDatabase, ctx)
 
 	// swagger API
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

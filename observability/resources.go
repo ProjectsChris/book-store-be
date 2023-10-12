@@ -1,12 +1,15 @@
 package observability
 
 import (
-	"context"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 
 	"go.opentelemetry.io/otel/sdk/resource"
 )
 
 // NewResource return a new resource
-func NewResource(ctx context.Context) (*resource.Resource, error) {
-	return resource.New(ctx)
+func NewResource() (*resource.Resource, error) {
+	return resource.NewWithAttributes(
+		semconv.SchemaURL,
+		semconv.ServiceName("book-store-be"),
+	), nil
 }

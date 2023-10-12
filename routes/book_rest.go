@@ -4,7 +4,6 @@ import (
 	"book-store-be/database"
 	"book-store-be/models"
 	"book-store-be/responses"
-	"context"
 	"database/sql"
 	"math"
 	"net/http"
@@ -42,9 +41,9 @@ var meter = otel.Meter("book-counter")
 func (ds *DatabaseSql) PostBook(c *gin.Context) {
 	book := new(models.Book)
 
-	// creates a new span
-	_, span := otel.Tracer("").Start(context.Background(), "/api/v1/book/")
-	defer span.End()
+	// create a span child of "bookSpan"
+	_, postBooksSpan := Tracer.Start(c.Request.Context(), "/api/v1/book/")
+	defer postBooksSpan.End()
 
 	// take values from body
 	if err := c.BindJSON(book); err != nil {
@@ -106,9 +105,9 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 	book := new(models.Book)
 	bookTitle := c.Param("title")
 
-	// create a span
-	_, span := otel.Tracer("").Start(c.Request.Context(), "/api/v1/book/id")
-	defer span.End()
+	// create a span child of "bookSpan"
+	_, getBookSpan := Tracer.Start(c.Request.Context(), "/api/v1/book/:id")
+	defer getBookSpan.End()
 
 	// init a meter counter
 	meterCounter, err := meter.Int64Counter("get-book-counter")
@@ -183,9 +182,9 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 	// take values from query params if is not null
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "0"))
 
-	// create a span
-	_, span := otel.Tracer("").Start(c.Request.Context(), "/api/v1/book")
-	defer span.End()
+	// create a span child of "bookSpan"
+	_, getBooksSpan := Tracer.Start(c.Request.Context(), "/api/v1/book")
+	defer getBooksSpan.End()
 
 	// init a meter counter
 	meterCounter, err := meter.Int64Counter("get-books-counter")

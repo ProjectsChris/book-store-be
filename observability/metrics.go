@@ -12,7 +12,7 @@ import (
 
 // InitMetric init new metric
 func InitMetric(ctx context.Context, endPoint string) (func(context.Context) error, error) {
-	res, err := NewResource(ctx)
+	res, err := NewResource()
 	if err != nil {
 		return nil, err
 	}
