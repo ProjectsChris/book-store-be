@@ -13,7 +13,9 @@ import (
 	"github.com/go-playground/validator/v10"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type DatabaseSql struct {
@@ -22,6 +24,8 @@ type DatabaseSql struct {
 
 var validate = validator.New()
 var meter = otel.Meter("book-counter")
+
+var Tracer = otel.Tracer("Book Store Be")
 
 // PostBook godoc
 //
@@ -42,7 +46,7 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 	book := new(models.Book)
 
 	// create a span child of "bookSpan"
-	_, postBooksSpan := Tracer.Start(c.Request.Context(), "/api/v1/book/")
+	spanCtx, postBooksSpan := Tracer.Start(c.Request.Context(), "/api/v1/book/")
 	defer postBooksSpan.End()
 
 	// take values from body
@@ -59,6 +63,7 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 	}
 
 	// executes query for add new book
+	_, closeSpan := Tracer.Start(spanCtx, "query")
 	_, err := ds.Db.Exec(database.ADD_NEW_BOOK,
 		book.Titolo,
 		book.Autore,
@@ -70,6 +75,7 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 		book.Categoria,
 		book.IdCopertina,
 	)
+	closeSpan.End()
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
 		return
@@ -183,7 +189,7 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "0"))
 
 	// create a span child of "bookSpan"
-	_, getBooksSpan := Tracer.Start(c.Request.Context(), "/api/v1/book")
+	spanCtx, getBooksSpan := Tracer.Start(c.Request.Context(), "/api/v1/book")
 	defer getBooksSpan.End()
 
 	// init a meter counter
@@ -193,11 +199,16 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 	}
 
 	// execute query
+	_, closeSpan := Tracer.Start(spanCtx, "query")
 	res, err := ds.Db.Query(database.OFFSET_BOOK_PAGINATION, 10*page)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
+		closeSpan.RecordError(err, trace.WithStackTrace(true))
+		closeSpan.End()
 		return
 	}
+	closeSpan.SetStatus(codes.Ok, "Query is ok")
+	closeSpan.End()
 
 	// execute result for adds books inside array
 	for res.Next() {
