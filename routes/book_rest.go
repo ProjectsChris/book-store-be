@@ -175,7 +175,7 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 
 // GetBooks method that return a JSON with all books
 func (ds *DatabaseSql) GetBooks(c *gin.Context) {
-	var bookList *[]models.Book
+	var bookList []models.Book
 
 	book := new(models.Book)
 	counter := 0
@@ -219,7 +219,7 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 			return
 		}
 
-		*bookList = append(*bookList, *book)
+		bookList = append(bookList, *book)
 	}
 
 	// query return a number of all records
@@ -240,13 +240,13 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 	}
 
 	// checks length of the list
-	if len(*bookList) > 0 {
+	if len(bookList) > 0 {
 		meterCounter.Add(c.Request.Context(), 1, metric.WithAttributes(
 			attribute.String("status", strconv.Itoa(http.StatusOK)),
 		))
 
 		c.JSON(http.StatusOK, responses.ResponseDatabase{
-			Data: *bookList,
+			Data: bookList,
 			PaginationDatabase: responses.PaginationDatabase{
 				TotalRecord: counter,
 				Page:        page,
