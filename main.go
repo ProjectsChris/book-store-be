@@ -3,17 +3,16 @@ package main
 import (
 	"book-store-be/database"
 	_ "book-store-be/docs"
+	"book-store-be/middleware"
 	"book-store-be/observability"
 	"book-store-be/routes"
 	"context"
 	"fmt"
-	"github.com/gin-contrib/cors"
+	"log"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"log"
-	"net/http"
-	"time"
 )
 
 // Settings Swagger godoc
@@ -67,19 +66,7 @@ func main() {
 
 	// gin
 	r := gin.Default()
-
-	// CORS configuration
-	corsConfig := cors.Config{
-		AllowAllOrigins:  true,
-		AllowMethods:     []string{http.MethodGet, http.MethodPost},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}
-
-	// CORS middleware
-	r.Use(cors.New(corsConfig))
+	r.Use(middleware.CORSMiddleware())
 
 	// routes book
 	routes.BookRoutes(&r.RouterGroup, sqlDatabase, ctx)
