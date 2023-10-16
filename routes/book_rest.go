@@ -40,8 +40,6 @@ var Tracer = otel.Tracer("Book Store Be")
 //	@Failure		400			{object}	responses.ResponseErrorJSON
 //	@Failure		500			{object}	responses.ResponseErrorJSON
 //	@Router			/book/ [post]
-
-// PostBook method add new book
 func (ds *DatabaseSql) PostBook(c *gin.Context) {
 	book := new(models.Book)
 
@@ -105,8 +103,6 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 //	@Failure		404	{object}	responses.ResponseErrorJSON
 //	@Failure		500	{object}	responses.ResponseErrorJSON
 //	@Router			/book/{id} [get]
-
-// GetBook method return detail of a specific book with same id
 func (ds *DatabaseSql) GetBook(c *gin.Context) {
 	book := new(models.Book)
 	bookTitle := c.Param("title")
@@ -177,8 +173,6 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 //	@Failure		404		{object}	responses.ResponseErrorJSON
 //	@Failure		500		{object}	responses.ResponseErrorJSON
 //	@Router			/book [get]
-
-// GetBooks method that return a JSON with all books
 func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 	var bookList []models.Book
 
