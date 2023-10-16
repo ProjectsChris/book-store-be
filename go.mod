@@ -49,8 +49,6 @@ require (
 	golang.org/x/net v0.15.0 // indirect
 )
 
-require github.com/gin-contrib/cors v1.4.0
-
 require (
 	github.com/lib/pq v1.10.9
 	go.opentelemetry.io/otel/sdk/metric v1.19.0
@@ -76,5 +74,5 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.19.0
 	go.opentelemetry.io/otel/metric v1.19.0
 	go.opentelemetry.io/otel/sdk v1.19.0
-	go.opentelemetry.io/otel/trace v1.19.0 // indirect
+	go.opentelemetry.io/otel/trace v1.19.0
 )
