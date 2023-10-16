@@ -1,4 +1,22 @@
 {
   "version": 3,
-  "name": "Book Store Be - API Gateway"
+  "name": "Book Store Be - API Gateway",
+  "endpoints": [
+    {
+      "endpoint": "/protected",
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "jwk_url": "http://192.168.3.6:9000/realms/realme/protocol/openid-connect/certs",
+          "disable_jwk_security": true
+        }
+      },
+      "backend": [
+        {
+          "host": ["http://192.168.3.6:8000"],
+          "url_pattern": "/api/v1/book"
+        }
+      ]
+    }
+  ]
 }
