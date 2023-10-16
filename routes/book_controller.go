@@ -18,8 +18,6 @@ func BookRoutes(r *gin.RouterGroup, db *sql.DB, ctx context.Context) {
 	{
 		book := v1.Group("/book")
 		{
-			// creates a span parent
-
 			// GET request
 			book.GET("/", sqlDb.GetBooks)
 			book.GET("/:title", sqlDb.GetBook)

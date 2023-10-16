@@ -3,7 +3,7 @@ version: "3.8"
 services:
   # Book Store Backend
   book-store-be:
-    image: 'chrisdeveloper2023/book-store-be'
+    #image: 'chrisdeveloper2023/book-store-be'
     container_name: 'book-store-be_gin'
     build: .
     ports:
