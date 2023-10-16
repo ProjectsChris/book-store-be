@@ -60,3 +60,29 @@ services:
       - ./configuration/grafana/provisioning/:/etc/grafana/provisioning/
     ports:
       - '3000:3000'
+
+  # Keycloak
+  keycloak:
+    image: 'quay.io/keycloak/keycloak:22.0.4'
+    container_name: 'book-store-be_keycloak'
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_HEALTH_ENABLED=true
+      - KC_METRICS_ENABLED=true
+    ports:
+      - '9000:8080'
+    command:
+      - 'start-dev'
+    restart: 'always'
+
+  # KrakenD
+  kraken:
+    image: 'devopsfaith/krakend:2.4'
+    container_name: 'book-store-be_krakend'
+    volumes:
+      - ./configuration/krakend/krakend.json:/etc/krakend/krakend.json
+    command: ['run', '-d', '-c', '/etc/krakend/krakend.json']
+    ports:
+      - '9100:8080'
+    restart: 'always'
