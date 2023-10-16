@@ -11,8 +11,8 @@ import (
 )
 
 // InitMetric init new metric
-func InitMetric(ctx context.Context, endPoint string) (func(context.Context) error, error) {
-	res, err := NewResource()
+func InitMetric(ctx context.Context, endPoint string, serviceName string) (func(context.Context) error, error) {
+	res, err := NewResource(serviceName)
 	if err != nil {
 		return nil, err
 	}

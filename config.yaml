@@ -13,6 +13,6 @@ database:
     sslMode: disable
 
 observability:
-  serviceName:
+  serviceName: "book-store-be"
   endpoint: "192.168.3.6:4317" # TODO: check if ip address is correct
   enabled:

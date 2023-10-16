@@ -38,14 +38,14 @@ func main() {
 	}
 
 	// init tracer
-	trace, err := observability.InitTracer(ctx, config.Observability.Endpoint)
+	trace, err := observability.InitTracer(ctx, config.Observability.Endpoint, config.Observability.ServiceName)
 	if err != nil {
 		panic("trace error" + err.Error())
 	}
 	defer trace(ctx)
 
 	// init metric
-	metric, err := observability.InitMetric(ctx, config.Observability.Endpoint)
+	metric, err := observability.InitMetric(ctx, config.Observability.Endpoint, config.Observability.ServiceName)
 	if err != nil {
 		panic("metric error" + err.Error())
 	}
