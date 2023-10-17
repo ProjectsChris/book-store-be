@@ -69,11 +69,19 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=admin
       - KC_HEALTH_ENABLED=true
       - KC_METRICS_ENABLED=true
+      - KC_DB=postgres
+      - KC_DB_DRIVER=postgres
+      - KC_DB_PASSWORD=postgres
+      - KC_DB_USERNAME=postgres
+      - KC_DB_URL_PORT=5432
+      - KC_DB_URL_HOST=localhost
+      - KC_DB_URL=jdbc:postgresql://192.168.3.6:5432/postgres
     ports:
       - '9000:8080'
-    command:
-      - 'start-dev'
+    command: ['start-dev']
     restart: 'always'
+    depends_on:
+      - postgres
 
   # KrakenD
   kraken:
@@ -85,3 +93,16 @@ services:
     ports:
       - '9100:8080'
     restart: 'always'
+
+  # Postgresql
+  postgres:
+    image: postgres:16
+    container_name: 'book-store-be_postgres'
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./.data/psqlinfo:/var/lib/postgresql/data
