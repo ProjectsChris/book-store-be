@@ -1,19 +1,36 @@
 {
   "version": 3,
   "name": "Book Store Be - API Gateway",
+  "extra_config": {
+    "security/cors": {
+      "allow_origins": [
+        "*"
+      ],
+      "allow_methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "allow_credentials": false,
+      "allow_headers": [
+        "*"
+      ]
+    }
+  },
   "endpoints": [
     {
       "endpoint": "/protected",
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
-          "jwk_url": "http://192.168.3.6:9000/realms/realme/protocol/openid-connect/certs",
+          "jwk_url": "http://192.168.3.2:9000/realms/realme/protocol/openid-connect/certs",
           "disable_jwk_security": true
         }
       },
       "backend": [
         {
-          "host": ["http://192.168.3.6:8000"],
+          "host": ["http://192.168.3.2:8000"],
           "url_pattern": "/api/v1/book"
         }
       ]
