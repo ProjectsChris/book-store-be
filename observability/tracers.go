@@ -10,7 +10,7 @@ import (
 )
 
 // InitTracer init a tracer
-func InitTracer(ctx context.Context, endPoint string) (func(context.Context) error, error) {
+func InitTracer(ctx context.Context, endPoint string, serviceName string) (func(context.Context) error, error) {
 	exporter, err := otlptrace.New(ctx, otlptracegrpc.NewClient(
 		otlptracegrpc.WithInsecure(),
 		otlptracegrpc.WithEndpoint(endPoint),
@@ -19,7 +19,7 @@ func InitTracer(ctx context.Context, endPoint string) (func(context.Context) err
 		return nil, err
 	}
 
-	tp, err := newTraceProvider(exporter, ctx)
+	tp, err := newTraceProvider(exporter, serviceName)
 	if err != nil {
 		return nil, err
 	}
@@ -29,8 +29,8 @@ func InitTracer(ctx context.Context, endPoint string) (func(context.Context) err
 }
 
 // newTraceProvider init a new tracer providers
-func newTraceProvider(exp sdktrace.SpanExporter, ctx context.Context) (*sdktrace.TracerProvider, error) {
-	r, err := NewResource()
+func newTraceProvider(exp sdktrace.SpanExporter, serviceName string) (*sdktrace.TracerProvider, error) {
+	r, err := NewResource(serviceName)
 	if err != nil {
 		return nil, err
 	}

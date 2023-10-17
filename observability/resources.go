@@ -7,9 +7,9 @@ import (
 )
 
 // NewResource return a new resource
-func NewResource() (*resource.Resource, error) {
+func NewResource(serviceName string) (*resource.Resource, error) {
 	return resource.NewWithAttributes(
 		semconv.SchemaURL,
-		semconv.ServiceName("book-store-be"),
+		semconv.ServiceName(serviceName),
 	), nil
 }
