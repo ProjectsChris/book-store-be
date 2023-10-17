@@ -15,18 +15,15 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// Settings Swagger godoc
-//
-//	@title			Book Store API
-//	@version		1.0
-//	@description	API for manages a book store
-//	@contact.name	Chris Developer
-//	@contact.email	chrisd3v3l0p3r@gmail.com
-//	@license.name	Apache 2.0
-//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
-//	@host			192.168.3.6:8000
-//	@BasePath		/api/v1
-
+// @title			Book Store API
+// @version		1.0
+// @description	API for manages a book store
+// @contact.name	Chris Developer
+// @contact.email	chrisd3v3l0p3r@gmail.com
+// @license.name	Apache 2.0
+// @license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+// @host			192.168.3.6:8000
+// @BasePath		/api/v1
 func main() {
 	// creates a context
 	ctx := context.Background()

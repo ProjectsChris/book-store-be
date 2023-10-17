@@ -13,11 +13,6 @@ database:
     sslMode: disable
 
 observability:
-<<<<<<< HEAD
-  serviceName: "pippo-service"
-  endpoint: "192.168.3.2:4317" # TODO: check if ip address is correct
-=======
   serviceName: "book-store-be"
   endpoint: "192.168.3.6:4317" # TODO: check if ip address is correct
->>>>>>> 6cdf36f129ffb0ecedf862d02e0d56d08b5e2efd
   enabled:
