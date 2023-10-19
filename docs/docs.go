@@ -620,39 +620,47 @@ const docTemplate = `{
             "properties": {
                 "autore": {
                     "type": "string",
-                    "maxLength": 64
+                    "maxLength": 64,
+                    "example": "Ruben Fabrizi"
                 },
                 "categoria": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "New Releases"
                 },
                 "copertina": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Hard Cover"
                 },
                 "genere": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Romance"
                 },
                 "id": {
                     "type": "integer"
                 },
                 "id_copertina": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 564
                 },
                 "prezzo": {
-                    "type": "number"
+                    "type": "number",
+                    "example": 15.9
                 },
                 "quantita": {
                     "type": "integer",
                     "maximum": 5,
-                    "minimum": 1
+                    "minimum": 1,
+                    "example": 2
                 },
                 "summary": {
                     "type": "string",
-                    "maxLength": 512
+                    "maxLength": 512,
+                    "example": "Lorem Ipsum is simply dummy text of the printing and typesetting industry."
                 },
                 "titolo": {
-                    "description": "TODO: fix length",
                     "type": "string",
-                    "maxLength": 255
+                    "maxLength": 255,
+                    "example": "Il silenzio di un mare in tempesta"
                 }
             }
         },

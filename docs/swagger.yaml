@@ -3,29 +3,38 @@ definitions:
   models.Book:
     properties:
       autore:
+        example: Ruben Fabrizi
         maxLength: 64
         type: string
       categoria:
+        example: New Releases
         type: string
       copertina:
+        example: Hard Cover
         type: string
       genere:
+        example: Romance
         type: string
       id:
         type: integer
       id_copertina:
+        example: 564
         type: integer
       prezzo:
+        example: 15.9
         type: number
       quantita:
+        example: 2
         maximum: 5
         minimum: 1
         type: integer
       summary:
+        example: Lorem Ipsum is simply dummy text of the printing and typesetting
+          industry.
         maxLength: 512
         type: string
       titolo:
-        description: 'TODO: fix length'
+        example: Il silenzio di un mare in tempesta
         maxLength: 255
         type: string
     required:
