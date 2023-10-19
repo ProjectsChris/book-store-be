@@ -93,8 +93,7 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 
 // GetBook godoc
 //
-//	@Summary	Get a book
-//	@Schemes
+//	@Summary		Get a book
 //	@Description	Get details of a book
 //	@Tags			Book
 //	@Accept			json
@@ -672,4 +671,45 @@ func (ds *DatabaseSql) UpdateIdCoverBook(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": "value of 'id_cover' is updated",
 	})
+}
+
+// DeleteBook godoc
+//
+//	@Summary		Delete a book
+//	@Description	Delete a book with same ID
+//	@Tags			Book
+//	@Produce		json
+//	@Param			id	path		int	true	"Id"
+//	@Success		200	{object}	responses.ResponseErrorJSON
+//	@Failure		404	{object}	responses.ResponseErrorJSON
+//	@Failure		500	{object}	responses.ResponseErrorJSON
+//	@Router			/book/{id} [delete]
+//
+// DeleteBook method for delete a book
+func (ds *DatabaseSql) DeleteBook(c *gin.Context) {
+	idBook, _ = strconv.Atoi(c.Param("id"))
+
+	// exec query
+	res, err := ds.Db.Exec(database.DELETE_BOOK, idBook)
+	if err != nil {
+		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	status, err := res.RowsAffected()
+	if err != nil {
+		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if status > 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"success": "book deleted",
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"error": "book not found or already deleted.",
+		})
+	}
+
 }

@@ -144,6 +144,32 @@ paths:
       tags:
       - Book
   /book/{id}:
+    delete:
+      description: Delete a book with same ID
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ResponseErrorJSON'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.ResponseErrorJSON'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ResponseErrorJSON'
+      summary: Delete a book
+      tags:
+      - Book
     get:
       consumes:
       - application/json

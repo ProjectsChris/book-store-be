@@ -35,6 +35,9 @@ func BookRoutes(r *gin.RouterGroup, db *sql.DB, ctx context.Context) {
 			book.PUT("/quantita/:id", sqlDb.UpdateQuantityBook)
 			book.PUT("/categoria/:id", sqlDb.UpdateCategoryBook)
 			book.PUT("/id-copertina/:id", sqlDb.UpdateIdCoverBook)
+
+			// DELETE request
+			book.DELETE("/:id", sqlDb.DeleteBook)
 		}
 	}
 

@@ -14,4 +14,5 @@ const (
 	UPDATE_QUANTITY_BOOK   = `UPDATE books SET quantity = $2 WHERE id = $1;`
 	UPDATE_CATEGORY_BOOK   = `UPDATE books SET category = $2 WHERE id = $1;`
 	UPDATE_ID_COVER_BOOK   = `UPDATE books SET idcover = $2 WHERE id = $1;`
+	DELETE_BOOK            = `DELETE FROM books WHERE id = $1;`
 )
