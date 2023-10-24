@@ -4,10 +4,13 @@ import (
 	"book-store-be/database"
 	"book-store-be/models"
 	"book-store-be/responses"
+	"context"
 	"database/sql"
+	"go.opentelemetry.io/otel/trace"
 	"math"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -15,7 +18,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type DatabaseSql struct {
@@ -25,7 +27,7 @@ type DatabaseSql struct {
 var validate = validator.New()
 var meter = otel.Meter("book-counter")
 
-var Tracer = otel.Tracer("Book Store Be")
+var tracer = otel.Tracer("Book Store Be")
 var idBook int
 
 // PostBook godoc
@@ -45,7 +47,7 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 	book := new(models.Book)
 
 	// create a span child of "bookSpan"
-	spanCtx, postBooksSpan := Tracer.Start(c.Request.Context(), "/api/v1/book/")
+	spanCtx, postBooksSpan := tracer.Start(c.Request.Context(), "/api/v1/book/")
 	defer postBooksSpan.End()
 
 	// take values from body
@@ -62,7 +64,7 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 	}
 
 	// executes query for add new book
-	_, closeSpan := Tracer.Start(spanCtx, "query")
+	_, closeSpan := tracer.Start(spanCtx, "query")
 	_, err := ds.Db.Exec(database.ADD_NEW_BOOK,
 		book.Titolo,
 		book.Autore,
@@ -108,7 +110,7 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 	bookTitle := c.Param("title")
 
 	// create a span child of "bookSpan"
-	_, getBookSpan := Tracer.Start(c.Request.Context(), "/api/v1/book/:id")
+	_, getBookSpan := tracer.Start(c.Request.Context(), "/api/v1/book/:id")
 	defer getBookSpan.End()
 
 	// init a meter counter
@@ -175,16 +177,19 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 //	@Router			/book [get]
 func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 	var bookList []models.Book
-
 	book := new(models.Book)
 	counter := 0
+
+	// init context
+	ctxSpan, cancelFunc := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancelFunc()
 
 	// take values from query params if is not null
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "0"))
 
-	// create a span child of "bookSpan"
-	spanCtx, getBooksSpan := Tracer.Start(c.Request.Context(), "/api/v1/book")
-	defer getBooksSpan.End()
+	// create a parent span
+	spanCtx, spanGetBooks := tracer.Start(ctxSpan, "/api/v1/book")
+	defer spanGetBooks.End()
 
 	// init a meter counter
 	meterCounter, err := meter.Int64Counter("get-books-counter")
@@ -192,17 +197,19 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 		panic(err.Error())
 	}
 
-	// execute query
-	_, closeSpan := Tracer.Start(spanCtx, "query")
+	// create a child span
+	_, spanClose := tracer.Start(spanCtx, "query OFFSET_BOOK_PAGINATION")
 	res, err := ds.Db.Query(database.OFFSET_BOOK_PAGINATION, 10*page)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
-		closeSpan.RecordError(err, trace.WithStackTrace(true))
-		closeSpan.End()
+		spanClose.RecordError(err, trace.WithStackTrace(true))
+		spanClose.End()
 		return
 	}
-	closeSpan.SetStatus(codes.Ok, "Query is ok")
-	closeSpan.End()
+
+	// set status child span and close
+	spanClose.SetStatus(codes.Ok, "Query OFFSET_BOOK_PAGINATION is ok")
+	spanClose.End()
 
 	// execute result for adds books inside array
 	for res.Next() {
@@ -226,13 +233,22 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 		bookList = append(bookList, *book)
 	}
 
+	// create a child span
+	_, spanGetCountBooks := tracer.Start(spanCtx, "query GET_COUNT_BOOKS")
+
 	// query return a number of all records
 	res, err = ds.Db.Query(database.GET_COUNT_BOOKS)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, "error: "+err.Error())
+		spanGetCountBooks.RecordError(err, trace.WithStackTrace(true))
+		spanGetCountBooks.End()
 		return
 	}
 	defer res.Close()
+
+	// set status child span and close
+	spanGetCountBooks.SetStatus(codes.Ok, "query GET_COUNT_BOOKS is ok")
+	spanGetCountBooks.End()
 
 	// execute query for extrapolate number of counter
 	for res.Next() {
@@ -284,6 +300,14 @@ func (ds *DatabaseSql) UpdateTitleBook(c *gin.Context) {
 	idBook, _ = strconv.Atoi(c.Param("id"))
 	var book = new(models.Book)
 
+	// init context
+	ctx, cancelFunc := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancelFunc()
+
+	// create a parent span
+	ctxSpan, spanUpdate := tracer.Start(ctx, "/api/v1/titolo/{id}")
+	defer spanUpdate.End()
+
 	// take values from JSON
 	if err := c.BindJSON(book); err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
@@ -297,15 +321,23 @@ func (ds *DatabaseSql) UpdateTitleBook(c *gin.Context) {
 		return
 	}
 
+	// create a child span
+	_, spanUpdateQuery := tracer.Start(ctxSpan, "query UPDATE_TITLE_BOOK")
+
 	// exec query
 	_, err := ds.Db.Exec(database.UPDATE_TITLE_BOOK, idBook, book.Titolo)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
+		spanUpdateQuery.RecordError(err, trace.WithStackTrace(true))
+		spanUpdateQuery.SetStatus(codes.Error, "")
+		spanUpdateQuery.End()
 		return
 	}
 
 	// response of success
 	responses.ResponseMessage(c, http.StatusOK, "value of 'titolo' is updated")
+	spanUpdateQuery.SetStatus(codes.Ok, "success")
+	spanUpdateQuery.End()
 }
 
 // UpdateWriterBook godoc
@@ -327,6 +359,14 @@ func (ds *DatabaseSql) UpdateWriterBook(c *gin.Context) {
 	idBook, _ = strconv.Atoi(c.Param("id"))
 	var book = new(models.Book)
 
+	// init context
+	ctx, cancelFunc := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancelFunc()
+
+	// create a parent span
+	ctxSpan, spanUpdate := tracer.Start(ctx, "/api/v1/autore/{id}")
+	defer spanUpdate.End()
+
 	// take values from JSON
 	if err := c.BindJSON(book); err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
@@ -340,10 +380,16 @@ func (ds *DatabaseSql) UpdateWriterBook(c *gin.Context) {
 		return
 	}
 
+	// create a child span
+	_, spanUpdateQuery := tracer.Start(ctxSpan, "query UPDATE_WRITER_BOOK")
+
 	// exec query
 	_, err := ds.Db.Exec(database.UPDATE_WRITER_BOOK, idBook, book.Autore)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
+		spanUpdateQuery.RecordError(err, trace.WithStackTrace(true))
+		spanUpdateQuery.SetStatus(codes.Error, "")
+		spanUpdateQuery.End()
 		return
 	}
 
@@ -351,6 +397,8 @@ func (ds *DatabaseSql) UpdateWriterBook(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": "value of 'autore' is updated",
 	})
+	spanUpdateQuery.SetStatus(codes.Ok, "success")
+	spanUpdateQuery.End()
 }
 
 // UpdatePriceBook godoc
@@ -372,6 +420,14 @@ func (ds *DatabaseSql) UpdatePriceBook(c *gin.Context) {
 	idBook, _ = strconv.Atoi(c.Param("id"))
 	var book = new(models.Book)
 
+	// init context
+	ctx, cancelFunc := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancelFunc()
+
+	// create a parent span
+	ctxSpan, spanUpdate := tracer.Start(ctx, "/api/v1/prezzo/{id}")
+	defer spanUpdate.End()
+
 	// take values from JSON
 	if err := c.BindJSON(book); err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
@@ -385,10 +441,16 @@ func (ds *DatabaseSql) UpdatePriceBook(c *gin.Context) {
 		return
 	}
 
+	// create a child span
+	_, spanUpdateQuery := tracer.Start(ctxSpan, "query UPDATE_PRICE_BOOK")
+
 	// exec query
 	_, err := ds.Db.Exec(database.UPDATE_PRICE_BOOK, idBook, book.Prezzo)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
+		spanUpdateQuery.RecordError(err, trace.WithStackTrace(true))
+		spanUpdateQuery.SetStatus(codes.Error, "")
+		spanUpdateQuery.End()
 		return
 	}
 
@@ -396,6 +458,8 @@ func (ds *DatabaseSql) UpdatePriceBook(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": "value of 'prezzo' is updated",
 	})
+	spanUpdateQuery.SetStatus(codes.Ok, "success")
+	spanUpdateQuery.End()
 }
 
 // UpdateSummaryBook godoc
@@ -417,6 +481,14 @@ func (ds *DatabaseSql) UpdateSummaryBook(c *gin.Context) {
 	idBook, _ = strconv.Atoi(c.Param("id"))
 	var book = new(models.Book)
 
+	// init context
+	ctx, cancelFunc := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancelFunc()
+
+	// create a parent span
+	ctxSpan, spanUpdate := tracer.Start(ctx, "/api/v1/summary/{id}")
+	defer spanUpdate.End()
+
 	// take values from JSON
 	if err := c.BindJSON(book); err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
@@ -424,22 +496,22 @@ func (ds *DatabaseSql) UpdateSummaryBook(c *gin.Context) {
 	}
 
 	// validation of field
-	validationError := validate.StructPartial(book, "Titolo")
+	validationError := validate.StructPartial(book, "Summary")
 	if validationError != nil {
 		responses.ResponseMessage(c, http.StatusBadRequest, "error: "+validationError.Error())
 		return
 	}
 
-	// check if book is not empty
-	if *book != (models.Book{}) {
-		// exec query
-		_, err := ds.Db.Exec(database.UPDATE_SUMMARY_BOOK, idBook, book.Summary)
-		if err != nil {
-			responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
-			return
-		}
-	} else {
-		responses.ResponseMessage(c, http.StatusBadRequest, "field 'summary' is empty")
+	// create a child span
+	_, spanUpdateQuery := tracer.Start(ctxSpan, "query UPDATE_SUMMARY_BOOK")
+
+	// exec query
+	_, err := ds.Db.Exec(database.UPDATE_SUMMARY_BOOK, idBook, book.Summary)
+	if err != nil {
+		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
+		spanUpdateQuery.RecordError(err, trace.WithStackTrace(true))
+		spanUpdateQuery.SetStatus(codes.Error, "")
+		spanUpdateQuery.End()
 		return
 	}
 
@@ -447,6 +519,8 @@ func (ds *DatabaseSql) UpdateSummaryBook(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": "value of 'summary' is updated",
 	})
+	spanUpdateQuery.SetStatus(codes.Ok, "success")
+	spanUpdateQuery.End()
 }
 
 // UpdateCoverBook godoc
@@ -468,6 +542,14 @@ func (ds *DatabaseSql) UpdateCoverBook(c *gin.Context) {
 	idBook, _ = strconv.Atoi(c.Param("id"))
 	var book = new(models.Book)
 
+	// init context
+	ctx, cancelFunc := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancelFunc()
+
+	// create a parent span
+	ctxSpan, spanUpdate := tracer.Start(ctx, "/api/v1/copertina/{id}")
+	defer spanUpdate.End()
+
 	// take values from JSON
 	if err := c.BindJSON(book); err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
@@ -481,10 +563,16 @@ func (ds *DatabaseSql) UpdateCoverBook(c *gin.Context) {
 		return
 	}
 
+	// create a child span
+	_, spanUpdateQuery := tracer.Start(ctxSpan, "query UPDATE_COVER_BOOK")
+
 	// exec query
 	_, err := ds.Db.Exec(database.UPDATE_COVER_BOOK, idBook, book.Copertina)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
+		spanUpdateQuery.RecordError(err, trace.WithStackTrace(true))
+		spanUpdateQuery.SetStatus(codes.Error, "")
+		spanUpdateQuery.End()
 		return
 	}
 
@@ -492,6 +580,8 @@ func (ds *DatabaseSql) UpdateCoverBook(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": "value of 'copertina' is updated",
 	})
+	spanUpdateQuery.SetStatus(codes.Ok, "success")
+	spanUpdateQuery.End()
 }
 
 // UpdateGenreBook godoc
@@ -513,6 +603,14 @@ func (ds *DatabaseSql) UpdateGenreBook(c *gin.Context) {
 	idBook, _ = strconv.Atoi(c.Param("id"))
 	var book = new(models.Book)
 
+	// init context
+	ctx, cancelFunc := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancelFunc()
+
+	// create a parent span
+	ctxSpan, spanUpdate := tracer.Start(ctx, "/api/v1/genere/{id}")
+	defer spanUpdate.End()
+
 	// take values from JSON
 	if err := c.BindJSON(book); err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
@@ -526,10 +624,16 @@ func (ds *DatabaseSql) UpdateGenreBook(c *gin.Context) {
 		return
 	}
 
+	// create a child span
+	_, spanUpdateQuery := tracer.Start(ctxSpan, "query UPDATE_GENRE_BOOK")
+
 	// exec query
 	_, err := ds.Db.Exec(database.UPDATE_GENRE_BOOK, idBook, book.Genere)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
+		spanUpdateQuery.RecordError(err, trace.WithStackTrace(true))
+		spanUpdateQuery.SetStatus(codes.Error, "")
+		spanUpdateQuery.End()
 		return
 	}
 
@@ -537,6 +641,8 @@ func (ds *DatabaseSql) UpdateGenreBook(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": "value of 'genere' is updated",
 	})
+	spanUpdateQuery.SetStatus(codes.Ok, "success")
+	spanUpdateQuery.End()
 }
 
 // UpdateQuantityBook godoc
@@ -558,6 +664,14 @@ func (ds *DatabaseSql) UpdateQuantityBook(c *gin.Context) {
 	idBook, _ = strconv.Atoi(c.Param("id"))
 	var book = new(models.Book)
 
+	// init context
+	ctx, cancelFunc := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancelFunc()
+
+	// create a parent span
+	ctxSpan, spanUpdate := tracer.Start(ctx, "/api/v1/quantita/{id}")
+	defer spanUpdate.End()
+
 	// take values from JSON
 	if err := c.BindJSON(book); err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
@@ -571,10 +685,16 @@ func (ds *DatabaseSql) UpdateQuantityBook(c *gin.Context) {
 		return
 	}
 
+	// create a child span
+	_, spanUpdateQuery := tracer.Start(ctxSpan, "query UPDATE_QUANTITY_BOOK")
+
 	// exec query
 	_, err := ds.Db.Exec(database.UPDATE_QUANTITY_BOOK, idBook, book.Quantita)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
+		spanUpdateQuery.RecordError(err, trace.WithStackTrace(true))
+		spanUpdateQuery.SetStatus(codes.Error, "")
+		spanUpdateQuery.End()
 		return
 	}
 
@@ -582,6 +702,8 @@ func (ds *DatabaseSql) UpdateQuantityBook(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": "value of 'quantita' is updated",
 	})
+	spanUpdateQuery.SetStatus(codes.Ok, "success")
+	spanUpdateQuery.End()
 }
 
 // UpdateCategoryBook godoc
@@ -603,6 +725,14 @@ func (ds *DatabaseSql) UpdateCategoryBook(c *gin.Context) {
 	idBook, _ = strconv.Atoi(c.Param("id"))
 	var book = new(models.Book)
 
+	// init context
+	ctx, cancelFunc := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancelFunc()
+
+	// create a parent span
+	ctxSpan, spanUpdate := tracer.Start(ctx, "/api/v1/categoria/{id}")
+	defer spanUpdate.End()
+
 	// take values from JSON
 	if err := c.BindJSON(book); err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
@@ -616,10 +746,16 @@ func (ds *DatabaseSql) UpdateCategoryBook(c *gin.Context) {
 		return
 	}
 
+	// create a child span
+	_, spanUpdateQuery := tracer.Start(ctxSpan, "query UPDATE_CATEGORY_BOOK")
+
 	// exec query
 	_, err := ds.Db.Exec(database.UPDATE_CATEGORY_BOOK, idBook, book.Categoria)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
+		spanUpdateQuery.RecordError(err, trace.WithStackTrace(true))
+		spanUpdateQuery.SetStatus(codes.Error, "")
+		spanUpdateQuery.End()
 		return
 	}
 
@@ -627,6 +763,8 @@ func (ds *DatabaseSql) UpdateCategoryBook(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": "value of 'categoria' is updated",
 	})
+	spanUpdateQuery.SetStatus(codes.Ok, "success")
+	spanUpdateQuery.End()
 }
 
 // UpdateIdCoverBook godoc
@@ -647,6 +785,14 @@ func (ds *DatabaseSql) UpdateIdCoverBook(c *gin.Context) {
 	idBook, _ = strconv.Atoi(c.Param("id"))
 	var book = new(models.Book)
 
+	// init context
+	ctx, cancelFunc := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancelFunc()
+
+	// create a parent span
+	ctxSpan, spanUpdate := tracer.Start(ctx, "/api/v1/id-cover/{id}")
+	defer spanUpdate.End()
+
 	// take values from JSON
 	if err := c.BindJSON(book); err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
@@ -660,17 +806,26 @@ func (ds *DatabaseSql) UpdateIdCoverBook(c *gin.Context) {
 		return
 	}
 
+	// create a child span
+	_, spanUpdateQuery := tracer.Start(ctxSpan, "query UPDATE_ID_COVER_BOOK")
+
 	// exec query
 	_, err := ds.Db.Exec(database.UPDATE_ID_COVER_BOOK, idBook, book.IdCopertina)
 	if err != nil {
 		responses.ResponseMessage(c, http.StatusInternalServerError, err.Error())
+		spanUpdateQuery.RecordError(err, trace.WithStackTrace(true))
+		spanUpdateQuery.SetStatus(codes.Error, "")
+		spanUpdateQuery.End()
 		return
 	}
 
 	// response of success
 	c.JSON(http.StatusOK, gin.H{
-		"success": "value of 'id_cover' is updated",
+		"status":  http.StatusOK,
+		"message": "value of 'id_copertina' is updated",
 	})
+	spanUpdateQuery.SetStatus(codes.Ok, "success")
+	spanUpdateQuery.End()
 }
 
 // DeleteBook godoc

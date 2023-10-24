@@ -9,8 +9,6 @@ import (
 
 // BookRoutes function with all routers of book
 func BookRoutes(r *gin.RouterGroup, db *sql.DB, ctx context.Context) {
-	//var bookSpan trace.Span
-
 	sqlDb := new(DatabaseSql)
 	sqlDb.Db = db
 
@@ -40,5 +38,4 @@ func BookRoutes(r *gin.RouterGroup, db *sql.DB, ctx context.Context) {
 			book.DELETE("/:id", sqlDb.DeleteBook)
 		}
 	}
-
 }
