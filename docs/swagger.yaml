@@ -67,9 +67,9 @@ info:
 paths:
   /book:
     get:
-      description: Get details for every book
+      description: Shows all books.
       parameters:
-      - description: Number of the pagination
+      - description: id book
         in: query
         name: page
         type: integer
@@ -90,16 +90,25 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.Response'
-      summary: Get books
+      summary: Shows books
       tags:
       - Book
   /book/:
     post:
       consumes:
       - application/json
-      description: Adds new book
+      description: |-
+        For add new book, you must follow the following rules:
+        <ul><li><b>titolo</b>: max 255 characters.</li>
+        <li><b>autore</b>: max 64 characters.</li>
+        <li><b>prezzo</b>: must be a float (e.g. 15.90).</li>
+        <li><b>summary</b>: max 512 characters.</li>
+        <li><b>copertina</b>: accepts: <i>Hard Cover</i>, <i>Flexible Cover</i>.</li>
+        <li><b>genere</b>: accepts: <i>Action</i>, <i>Adventure</i>, <i>Business</i>, <i>Cookbooks</i>, <i>Drama</i>, <i>Detective</i>, <i>Fantasy</i>, <i>Fiction</i>, <i>History</i>, <i>Horror</i>, <i>Romance</i>, <i>Psychology</i>, <i>Science Fiction</i>, <i>Short Stories</i>, <i>Thriller</i>.</li>
+        <li><b>quantita</b>: the value must be greater 1 and less then 5.</li>
+        <li><b>categoria</b>: accepts: <i>Best Seller</i>, <i>New Releases</i>, <i>Best Offers.</i></li></ul>
       parameters:
-      - description: Adds new book
+      - description: Book
         in: body
         name: models.Book
         required: true
@@ -125,9 +134,9 @@ paths:
       - Book
   /book/{id}:
     delete:
-      description: Delete a book with same ID
+      description: Removes a book with same id.
       parameters:
-      - description: Id
+      - description: id book
         in: path
         name: id
         required: true
@@ -138,7 +147,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Book'
+            $ref: '#/definitions/responses.Response'
         "404":
           description: Not Found
           schema:
@@ -147,15 +156,15 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.Response'
-      summary: Delete a book
+      summary: Removes a book
       tags:
       - Book
     get:
       consumes:
       - application/json
-      description: Get details of a book
+      description: Shows all details of a book.
       parameters:
-      - description: Title of the book
+      - description: id book
         in: path
         name: id
         required: true
@@ -175,20 +184,27 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.Response'
-      summary: Get a book
+      summary: Shows a book
       tags:
       - Book
     put:
       description: |-
-        Update all details of a book
-        The title cannot be more than 255 characters.
+        These are properties for update the book:
+        <li><b>titolo</b>: max 255 characters.</li>
+        <li><b>autore</b>: max 64 characters.</li>
+        <li><b>prezzo</b>: must be a float (e.g. 15.90).</li>
+        <li><b>summary</b>: max 512 characters.</li>
+        <li><b>copertina</b>: accepts: <i>Hard Cover</i>, <i>Flexible Cover</i>.</li>
+        <li><b>genere</b>: accepts: <i>Action</i>, <i>Adventure</i>, <i>Business</i>, <i>Cookbooks</i>, <i>Drama</i>, <i>Detective</i>, <i>Fantasy</i>, <i>Fiction</i>, <i>History</i>, <i>Horror</i>, <i>Romance</i>, <i>Psychology</i>, <i>Science Fiction</i>, <i>Short Stories</i>, <i>Thriller</i>.</li>
+        <li><b>quantita</b>: the value must be greater 1 and less then 5.</li>
+        <li><b>categoria</b>: accepts: <i>Best Seller</i>, <i>New Releases</i>, <i>Best Offers.</i></li>
       parameters:
-      - description: Id
+      - description: id book
         in: path
         name: id
         required: true
         type: string
-      - description: Book
+      - description: book
         in: body
         name: title
         required: true

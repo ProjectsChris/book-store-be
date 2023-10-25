@@ -24,18 +24,18 @@ const docTemplate = `{
     "paths": {
         "/book": {
             "get": {
-                "description": "Get details for every book",
+                "description": "Shows all books.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Book"
                 ],
-                "summary": "Get books",
+                "summary": "Shows books",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Number of the pagination",
+                        "description": "id book",
                         "name": "page",
                         "in": "query"
                     }
@@ -67,7 +67,7 @@ const docTemplate = `{
         },
         "/book/": {
             "post": {
-                "description": "Adds new book",
+                "description": "For add new book, you must follow the following rules:\n\u003cul\u003e\u003cli\u003e\u003cb\u003etitolo\u003c/b\u003e: max 255 characters.\u003c/li\u003e\n\u003cli\u003e\u003cb\u003eautore\u003c/b\u003e: max 64 characters.\u003c/li\u003e\n\u003cli\u003e\u003cb\u003eprezzo\u003c/b\u003e: must be a float (e.g. 15.90).\u003c/li\u003e\n\u003cli\u003e\u003cb\u003esummary\u003c/b\u003e: max 512 characters.\u003c/li\u003e\n\u003cli\u003e\u003cb\u003ecopertina\u003c/b\u003e: accepts: \u003ci\u003eHard Cover\u003c/i\u003e, \u003ci\u003eFlexible Cover\u003c/i\u003e.\u003c/li\u003e\n\u003cli\u003e\u003cb\u003egenere\u003c/b\u003e: accepts: \u003ci\u003eAction\u003c/i\u003e, \u003ci\u003eAdventure\u003c/i\u003e, \u003ci\u003eBusiness\u003c/i\u003e, \u003ci\u003eCookbooks\u003c/i\u003e, \u003ci\u003eDrama\u003c/i\u003e, \u003ci\u003eDetective\u003c/i\u003e, \u003ci\u003eFantasy\u003c/i\u003e, \u003ci\u003eFiction\u003c/i\u003e, \u003ci\u003eHistory\u003c/i\u003e, \u003ci\u003eHorror\u003c/i\u003e, \u003ci\u003eRomance\u003c/i\u003e, \u003ci\u003ePsychology\u003c/i\u003e, \u003ci\u003eScience Fiction\u003c/i\u003e, \u003ci\u003eShort Stories\u003c/i\u003e, \u003ci\u003eThriller\u003c/i\u003e.\u003c/li\u003e\n\u003cli\u003e\u003cb\u003equantita\u003c/b\u003e: the value must be greater 1 and less then 5.\u003c/li\u003e\n\u003cli\u003e\u003cb\u003ecategoria\u003c/b\u003e: accepts: \u003ci\u003eBest Seller\u003c/i\u003e, \u003ci\u003eNew Releases\u003c/i\u003e, \u003ci\u003eBest Offers.\u003c/i\u003e\u003c/li\u003e\u003c/ul\u003e",
                 "consumes": [
                     "application/json"
                 ],
@@ -80,7 +80,7 @@ const docTemplate = `{
                 "summary": "Adds a book",
                 "parameters": [
                     {
-                        "description": "Adds new book",
+                        "description": "Book",
                         "name": "models.Book",
                         "in": "body",
                         "required": true,
@@ -113,7 +113,7 @@ const docTemplate = `{
         },
         "/book/{id}": {
             "get": {
-                "description": "Get details of a book",
+                "description": "Shows all details of a book.",
                 "consumes": [
                     "application/json"
                 ],
@@ -123,11 +123,11 @@ const docTemplate = `{
                 "tags": [
                     "Book"
                 ],
-                "summary": "Get a book",
+                "summary": "Shows a book",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Title of the book",
+                        "description": "id book",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -155,7 +155,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Update all details of a book\nThe title cannot be more than 255 characters.",
+                "description": "These are properties for update the book:\n\u003cli\u003e\u003cb\u003etitolo\u003c/b\u003e: max 255 characters.\u003c/li\u003e\n\u003cli\u003e\u003cb\u003eautore\u003c/b\u003e: max 64 characters.\u003c/li\u003e\n\u003cli\u003e\u003cb\u003eprezzo\u003c/b\u003e: must be a float (e.g. 15.90).\u003c/li\u003e\n\u003cli\u003e\u003cb\u003esummary\u003c/b\u003e: max 512 characters.\u003c/li\u003e\n\u003cli\u003e\u003cb\u003ecopertina\u003c/b\u003e: accepts: \u003ci\u003eHard Cover\u003c/i\u003e, \u003ci\u003eFlexible Cover\u003c/i\u003e.\u003c/li\u003e\n\u003cli\u003e\u003cb\u003egenere\u003c/b\u003e: accepts: \u003ci\u003eAction\u003c/i\u003e, \u003ci\u003eAdventure\u003c/i\u003e, \u003ci\u003eBusiness\u003c/i\u003e, \u003ci\u003eCookbooks\u003c/i\u003e, \u003ci\u003eDrama\u003c/i\u003e, \u003ci\u003eDetective\u003c/i\u003e, \u003ci\u003eFantasy\u003c/i\u003e, \u003ci\u003eFiction\u003c/i\u003e, \u003ci\u003eHistory\u003c/i\u003e, \u003ci\u003eHorror\u003c/i\u003e, \u003ci\u003eRomance\u003c/i\u003e, \u003ci\u003ePsychology\u003c/i\u003e, \u003ci\u003eScience Fiction\u003c/i\u003e, \u003ci\u003eShort Stories\u003c/i\u003e, \u003ci\u003eThriller\u003c/i\u003e.\u003c/li\u003e\n\u003cli\u003e\u003cb\u003equantita\u003c/b\u003e: the value must be greater 1 and less then 5.\u003c/li\u003e\n\u003cli\u003e\u003cb\u003ecategoria\u003c/b\u003e: accepts: \u003ci\u003eBest Seller\u003c/i\u003e, \u003ci\u003eNew Releases\u003c/i\u003e, \u003ci\u003eBest Offers.\u003c/i\u003e\u003c/li\u003e",
                 "produces": [
                     "application/json"
                 ],
@@ -166,13 +166,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Id",
+                        "description": "id book",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Book",
+                        "description": "book",
                         "name": "title",
                         "in": "body",
                         "required": true,
@@ -203,18 +203,18 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete a book with same ID",
+                "description": "Removes a book with same id.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Book"
                 ],
-                "summary": "Delete a book",
+                "summary": "Removes a book",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Id",
+                        "description": "id book",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -224,7 +224,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Book"
+                            "$ref": "#/definitions/responses.Response"
                         }
                     },
                     "404": {

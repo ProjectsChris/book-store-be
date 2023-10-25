@@ -32,13 +32,20 @@ var idBook int
 
 // PostBook godoc
 //
-//	@Summary	Adds a book
-//	@Schemes
-//	@Description	Adds new book
+//	@Summary		Adds a book
+//	@Description	For add new book, you must follow the following rules:
+//	@Description	<ul><li><b>titolo</b>: max 255 characters.</li>
+//	@Description	<li><b>autore</b>: max 64 characters.</li>
+//	@Description	<li><b>prezzo</b>: must be a float (e.g. 15.90).</li>
+//	@Description	<li><b>summary</b>: max 512 characters.</li>
+//	@Description	<li><b>copertina</b>: accepts: <i>Hard Cover</i>, <i>Flexible Cover</i>.</li>
+//	@Description	<li><b>genere</b>: accepts: <i>Action</i>, <i>Adventure</i>, <i>Business</i>, <i>Cookbooks</i>, <i>Drama</i>, <i>Detective</i>, <i>Fantasy</i>, <i>Fiction</i>, <i>History</i>, <i>Horror</i>, <i>Romance</i>, <i>Psychology</i>, <i>Science Fiction</i>, <i>Short Stories</i>, <i>Thriller</i>.</li>
+//	@Description	<li><b>quantita</b>: the value must be greater 1 and less then 5.</li>
+//	@Description	<li><b>categoria</b>: accepts: <i>Best Seller</i>, <i>New Releases</i>, <i>Best Offers.</i></li></ul>
 //	@Tags			Book
 //	@Accept			json
 //	@Produce		json
-//	@Param			models.Book	body		models.Book	true	"Adds new book"
+//	@Param			models.Book	body		models.Book	true	"Book"
 //	@Success		200			{object}	responses.Response
 //	@Failure		400			{object}	responses.Response
 //	@Failure		500			{object}	responses.Response
@@ -46,9 +53,13 @@ var idBook int
 func (ds *DatabaseSql) PostBook(c *gin.Context) {
 	book := new(models.Book)
 
-	// create a span child of "bookSpan"
-	spanCtx, postBooksSpan := tracer.Start(c.Request.Context(), "/api/v1/book/")
-	defer postBooksSpan.End()
+	// init context
+	ctx, cancelFunc := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancelFunc()
+
+	// create a parent span
+	spanCtx, spanAddBook := tracer.Start(ctx, "[post] /api/v1/book/")
+	defer spanAddBook.End()
 
 	// take values from body
 	if err := c.BindJSON(book); err != nil {
@@ -56,15 +67,16 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 		return
 	}
 
-	// check validator
-	validationError := validate.Struct(book)
-	if validationError != nil {
+	// check validators
+	if validationError := validate.Struct(book); validationError != nil {
 		responses.ErrorServerResponseJson(c, validationError.Error())
 		return
 	}
 
+	// create a child span
+	_, spanClose := tracer.Start(spanCtx, "query ADD_NEW_BOOK")
+
 	// executes query for add new book
-	_, closeSpan := tracer.Start(spanCtx, "query")
 	_, err := ds.Db.Exec(
 		database.ADD_NEW_BOOK,
 		book.Titolo,
@@ -77,8 +89,9 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 		book.Categoria,
 		book.IdCopertina,
 	)
-	closeSpan.End()
 	if err != nil {
+		spanClose.RecordError(err, trace.WithStackTrace(true))
+		spanClose.End()
 		responses.ErrorServerResponseJson(c, err.Error())
 		return
 	}
@@ -91,19 +104,20 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 
 	// increment counter
 	meterCounter.Add(c.Request.Context(), 1)
-	c.JSON(http.StatusOK, responses.Response{
-		Message: "added new book",
-	})
+
+	spanClose.SetStatus(codes.Ok, "query ADD_NEW_BOOK is ok")
+	spanClose.End()
+	c.JSON(http.StatusOK, responses.Response{Message: "added new book"})
 }
 
 // GetBook godoc
 //
-//	@Summary		Get a book
-//	@Description	Get details of a book
+//	@Summary		Shows a book
+//	@Description	Shows all details of a book.
 //	@Tags			Book
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		int	true	"Title of the book"
+//	@Param			id	path		int	true	"id book"
 //	@Success		200	{object}	models.Book
 //	@Failure		404	{object}	responses.Response
 //	@Failure		500	{object}	responses.Response
@@ -112,8 +126,12 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 	book := new(models.Book)
 	bookTitle := c.Param("title")
 
-	// create a span child of "bookSpan"
-	_, getBookSpan := tracer.Start(c.Request.Context(), "/api/v1/book/:id")
+	// init context
+	ctx, cancelFunc := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancelFunc()
+
+	// create a parent span
+	spanCtx, getBookSpan := tracer.Start(ctx, "[get] /api/v1/book/:id")
 	defer getBookSpan.End()
 
 	// init a meter counter
@@ -122,12 +140,21 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 		panic(err.Error())
 	}
 
+	// create a child span
+	_, spanClose := tracer.Start(spanCtx, "query GET_DETAIL_BOOK")
+
 	// executes query
 	res, err := ds.Db.Query(database.GET_DETAIL_BOOK, bookTitle)
+
 	if err != nil {
 		responses.ErrorServerResponseJson(c, err.Error())
+		spanClose.RecordError(err, trace.WithStackTrace(true))
+		spanClose.End()
 		return
 	}
+
+	spanClose.SetStatus(codes.Ok, "query GET_DETAIL_BOOK is ok")
+	spanClose.End()
 	defer res.Close()
 
 	// search result of the query
@@ -158,7 +185,7 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 			attribute.String("status", strconv.Itoa(http.StatusNotFound)),
 		))
 	} else {
-		c.JSON(http.StatusOK, gin.H{"data": book})
+		c.JSON(http.StatusOK, book)
 
 		meterCounter.Add(c.Request.Context(), 1, metric.WithAttributes(
 			attribute.String("status", strconv.Itoa(http.StatusOK)),
@@ -168,12 +195,11 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 
 // GetBooks godoc
 //
-//	@Summary	Get books
-//	@Schemes
-//	@Description	Get details for every book
+//	@Summary		Shows books
+//	@Description	Shows all books.
 //	@Tags			Book
 //	@Produce		json
-//	@Param			page	query		int	false	"Number of the pagination"
+//	@Param			page	query		int	false	"id book"
 //	@Success		200		{object}	[]models.Book
 //	@Failure		404		{object}	responses.Response
 //	@Failure		500		{object}	responses.Response
@@ -184,14 +210,14 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 	counter := 0
 
 	// init context
-	ctxSpan, cancelFunc := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	ctx, cancelFunc := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancelFunc()
 
 	// take values from query params if is not null
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "0"))
 
 	// create a parent span
-	spanCtx, spanGetBooks := tracer.Start(ctxSpan, "/api/v1/book")
+	spanCtx, spanGetBooks := tracer.Start(ctx, "[get] /api/v1/book")
 	defer spanGetBooks.End()
 
 	// init a meter counter
@@ -288,12 +314,19 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 // UpdateBook godoc
 //
 //	@Summary		Updates the book
-//	@Description	Update all details of a book
-//	@Description	The title cannot be more than 255 characters.
+//	@Description	These are properties for update the book:
+//	@Description	<li><b>titolo</b>: max 255 characters.</li>
+//	@Description	<li><b>autore</b>: max 64 characters.</li>
+//	@Description	<li><b>prezzo</b>: must be a float (e.g. 15.90).</li>
+//	@Description	<li><b>summary</b>: max 512 characters.</li>
+//	@Description	<li><b>copertina</b>: accepts: <i>Hard Cover</i>, <i>Flexible Cover</i>.</li>
+//	@Description	<li><b>genere</b>: accepts: <i>Action</i>, <i>Adventure</i>, <i>Business</i>, <i>Cookbooks</i>, <i>Drama</i>, <i>Detective</i>, <i>Fantasy</i>, <i>Fiction</i>, <i>History</i>, <i>Horror</i>, <i>Romance</i>, <i>Psychology</i>, <i>Science Fiction</i>, <i>Short Stories</i>, <i>Thriller</i>.</li>
+//	@Description	<li><b>quantita</b>: the value must be greater 1 and less then 5.</li>
+//	@Description	<li><b>categoria</b>: accepts: <i>Best Seller</i>, <i>New Releases</i>, <i>Best Offers.</i></li>
 //	@Tags			Book
 //	@Produce		json
-//	@Param			id		path		string		true	"Id"
-//	@Param			title	body		models.Book	true	"Book"
+//	@Param			id		path		string		true	"id book"
+//	@Param			title	body		models.Book	true	"book"
 //	@Success		200		{object}	responses.Response
 //	@Failure		404		{object}	responses.Response
 //	@Failure		500		{object}	responses.Response
@@ -309,7 +342,7 @@ func (ds *DatabaseSql) UpdateBook(c *gin.Context) {
 	defer cancelFunc()
 
 	// create a parent span
-	ctxSpan, spanUpdate := tracer.Start(ctx, "/api/v1/book/{id}")
+	spanCtx, spanUpdate := tracer.Start(ctx, "[put] /api/v1/book/{id}")
 	defer spanUpdate.End()
 
 	// take values from JSON
@@ -383,7 +416,7 @@ func (ds *DatabaseSql) UpdateBook(c *gin.Context) {
 	}
 
 	// create a child span
-	_, spanUpdateQuery := tracer.Start(ctxSpan, "query UPDATE_BOOK")
+	_, spanUpdateQuery := tracer.Start(spanCtx, "query UPDATE_BOOK")
 
 	// exec query
 	_, err := ds.Db.Exec(
@@ -410,18 +443,17 @@ func (ds *DatabaseSql) UpdateBook(c *gin.Context) {
 	// response of success
 	spanUpdateQuery.SetStatus(codes.Ok, "success")
 	spanUpdateQuery.End()
-
 	c.JSON(http.StatusOK, responses.Response{Message: "book updated"})
 }
 
 // DeleteBook godoc
 //
-//	@Summary		Delete a book
-//	@Description	Delete a book with same ID
+//	@Summary		Removes a book
+//	@Description	Removes a book with same id.
 //	@Tags			Book
 //	@Produce		json
-//	@Param			id	path		int	true	"Id"
-//	@Success		200	{object}	models.Book
+//	@Param			id	path		int	true	"id book"
+//	@Success		200	{object}	responses.Response
 //	@Failure		404	{object}	responses.Response
 //	@Failure		500	{object}	responses.Response
 //	@Router			/book/{id} [delete]
@@ -430,12 +462,29 @@ func (ds *DatabaseSql) UpdateBook(c *gin.Context) {
 func (ds *DatabaseSql) DeleteBook(c *gin.Context) {
 	idBook, _ = strconv.Atoi(c.Param("id"))
 
+	// init context
+	ctx, cancelFunc := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancelFunc()
+
+	// create a parent span
+	spanCtx, spanDelete := tracer.Start(ctx, "[delete] /api/v1/book/{id}")
+	defer spanDelete.End()
+
+	// create a child span
+	_, spanDeleteQuery := tracer.Start(spanCtx, "query UPDATE_BOOK")
+
 	// exec query
 	res, err := ds.Db.Exec(database.DELETE_BOOK, idBook)
 	if err != nil {
 		responses.ErrorServerResponseJson(c, err.Error())
+		spanDeleteQuery.RecordError(err, trace.WithStackTrace(true))
+		spanDeleteQuery.SetStatus(codes.Error, "")
+		spanDeleteQuery.End()
 		return
 	}
+
+	spanDeleteQuery.SetStatus(codes.Ok, "success")
+	spanDeleteQuery.End()
 
 	status, err := res.RowsAffected()
 	if err != nil {
