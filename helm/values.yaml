@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: gitea.casarazzo.duckdns.org/akadmin/book-store-be
+  repository: fededomm/book-store-be
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -26,15 +26,15 @@ serviceAccount:
 podAnnotations: {}
 
 podSecurityContext: {}
-  # fsGroup: 2000
+# fsGroup: 2000
 
 securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+# capabilities:
+#   drop:
+#   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
 env:
   BOOK_STORE_BE_FILE_PATH: /deployments/config/config.yaml
 
@@ -44,30 +44,30 @@ service:
 
 ingress:
   enabled: true
-  className: ""
+  className: "nginx"
   annotations:
-    cert-manager.io/cluster-issuer: test-cert-manager-webhook-duckdns-production
+    cert-manager.io/cluster-issuer: letsencrypt-prod
   hosts:
-    - host: bookstore.casarazzo.duckdns.org
-      paths:
-        - path: /
-          pathType: Prefix
-  tls: 
-    - secretName: book-store-tls
-      hosts:
-        - bookstore.casarazzo.duckdns.org
+  - host: bookstore.kube.gpagroup.it
+    paths:
+    - path: /
+      pathType: Prefix
+  tls:
+  - secretName: bookstore.kube.gpagroup.it-tls
+    hosts:
+    - bookstore.kube.gpagroup.it
 
 resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+# We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you do want to specify resources, uncomment the following
+# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+# limits:
+#   cpu: 100m
+#   memory: 128Mi
+# requests:
+#   cpu: 100m
+#   memory: 128Mi
 
 autoscaling:
   enabled: false

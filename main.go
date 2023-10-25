@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -34,20 +35,22 @@ func main() {
 		log.Fatal("Impossibile Leggere il file di configurazione")
 	}
 
-	// init tracer
-	trace, err := observability.InitTracer(ctx, config.Observability.Endpoint, config.Observability.ServiceName)
-	if err != nil {
-		panic("trace error" + err.Error())
-	}
-	defer trace(ctx)
+	if config.Observability.Enable == false {
+		// init tracer
+		trace, err := observability.InitTracer(ctx, config.Observability.Endpoint, config.Observability.ServiceName)
+		if err != nil {
+			panic("trace error" + err.Error())
+		}
+		defer trace(ctx)
 
-	// TODO: fix metrics
-	// init metric
-	//metric, err := observability.InitMetric(ctx, config.Observability.Endpoint, config.Observability.ServiceName)
-	//if err != nil {
-	//	panic("metric error" + err.Error())
-	//}
-	//defer metric(ctx)
+		// TODO: fix metrics
+		// init metric
+		//metric, err := observability.InitMetric(ctx, config.Observability.Endpoint, config.Observability.ServiceName)
+		//if err != nil {
+		//	panic("metric error" + err.Error())
+		//}
+		//defer metric(ctx)
+	}
 
 	// create a connection string for Postgresql
 	connectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
@@ -71,7 +74,13 @@ func main() {
 
 	// swagger API
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"Status":      "UP!",
+			"Description": "HealthCheck",
+		})
+	})
 
 	// run gin
-	r.Run(":8000")
+	r.Run("0.0.0.0:8000")
 }
