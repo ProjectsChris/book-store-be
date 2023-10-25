@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: gitea.casarazzo.duckdns.org/akadmin/book-store-be
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
@@ -98,6 +98,6 @@ appConfig:
       sslMode: disable
 
   observability:
-    serviceName: test
+    serviceName: test1
     endpoint: "main-collector.observability:4317" # TODO: check if ip address is correct
     enabled: true
