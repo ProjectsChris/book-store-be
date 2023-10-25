@@ -91,6 +91,7 @@ func (ds *DatabaseSql) PostBook(c *gin.Context) {
 	)
 	if err != nil {
 		spanClose.RecordError(err, trace.WithStackTrace(true))
+		spanClose.SetStatus(codes.Error, "")
 		spanClose.End()
 		responses.ErrorServerResponseJson(c, err.Error())
 		return
@@ -149,6 +150,7 @@ func (ds *DatabaseSql) GetBook(c *gin.Context) {
 	if err != nil {
 		responses.ErrorServerResponseJson(c, err.Error())
 		spanClose.RecordError(err, trace.WithStackTrace(true))
+		spanClose.SetStatus(codes.Error, "")
 		spanClose.End()
 		return
 	}
@@ -232,6 +234,7 @@ func (ds *DatabaseSql) GetBooks(c *gin.Context) {
 	if err != nil {
 		responses.ErrorServerResponseJson(c, err.Error())
 		spanClose.RecordError(err, trace.WithStackTrace(true))
+		spanClose.SetStatus(codes.Error, "")
 		spanClose.End()
 		return
 	}

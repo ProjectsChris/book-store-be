@@ -4,30 +4,29 @@ receivers:
       grpc:
 
 exporters:
-  jaeger:
-    endpoint: jaeger-all-in-one:14250
+  otlp:
+    endpoint: tempo:4317
     tls:
       insecure: true
-  
+
   prometheus:
     endpoint: 0.0.0.0:8889
 
-  logging:
+  debug:
 
 processors:
   batch:
 
 extensions:
-    health_check:
+  health_check:
 
 service:
   extensions: [health_check]
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [jaeger]
+      exporters: [otlp]
     metrics:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [prometheus]
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ prometheus ]
