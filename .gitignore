@@ -11,3 +11,4 @@
 .fleet
 .DS_Store
 .data
+/configuration/tempo-data
