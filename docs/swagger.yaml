@@ -48,32 +48,10 @@ definitions:
     - summary
     - titolo
     type: object
-  responses.PaginationDatabase:
-    properties:
-      page:
-        type: integer
-      total_pages:
-        type: integer
-      total_record:
-        type: integer
-    type: object
-  responses.ResponseDatabase:
-    properties:
-      data:
-        items:
-          $ref: '#/definitions/models.Book'
-        type: array
-      paging:
-        allOf:
-        - $ref: '#/definitions/responses.PaginationDatabase'
-        description: struct embedding
-    type: object
-  responses.ResponseErrorJSON:
+  responses.Response:
     properties:
       message:
         type: string
-      status:
-        type: integer
     type: object
 host: 192.168.3.6:8000
 info:
@@ -101,15 +79,17 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.ResponseDatabase'
+            items:
+              $ref: '#/definitions/models.Book'
+            type: array
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
+            $ref: '#/definitions/responses.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
+            $ref: '#/definitions/responses.Response'
       summary: Get books
       tags:
       - Book
@@ -131,15 +111,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Book'
+            $ref: '#/definitions/responses.Response'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
+            $ref: '#/definitions/responses.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
+            $ref: '#/definitions/responses.Response'
       summary: Adds a book
       tags:
       - Book
@@ -158,15 +138,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
+            $ref: '#/definitions/models.Book'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
+            $ref: '#/definitions/responses.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
+            $ref: '#/definitions/responses.Response'
       summary: Delete a book
       tags:
       - Book
@@ -190,296 +170,17 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
+            $ref: '#/definitions/responses.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
+            $ref: '#/definitions/responses.Response'
       summary: Get a book
       tags:
       - Book
-  /book/autore/{id}:
     put:
       description: |-
-        Update name of the writer.
-        The name of the writer can't be more than 64 characters.
-      parameters:
-      - description: Id
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Writer
-        in: body
-        name: writer
-        required: true
-        schema:
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-      summary: Update writer
-      tags:
-      - Book
-  /book/categoria/{id}:
-    put:
-      description: |-
-        Update the category of a book
-        The types of categories are: Best Seller, New Releases, and Best Offers.
-      parameters:
-      - description: Id
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Category
-        in: body
-        name: category
-        required: true
-        schema:
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-      summary: Update category
-      tags:
-      - Book
-  /book/copertina/{id}:
-    put:
-      description: |-
-        Update the type cover of a book.
-        There are two types of cover: Hard Cover or Flexible Cover.
-      parameters:
-      - description: Id
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Cover
-        in: body
-        name: cover
-        required: true
-        schema:
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-      summary: Update cover
-      tags:
-      - Book
-  /book/genere/{id}:
-    put:
-      description: |-
-        Update the genre of a book.
-        Here a list of all genre supported: Action, Adventure, Business, Cookbooks, Drama, Detective, Fantasy, Fiction, History, Horror, Romance, Psychology, Science Fiction, Short Stories, Thriller.
-      parameters:
-      - description: Id
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Genre
-        in: body
-        name: genre
-        required: true
-        schema:
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-      summary: Update genre
-      tags:
-      - Book
-  /book/id-copertina/{id}:
-    put:
-      description: Update the id cover of a book
-      parameters:
-      - description: Id
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Id Cover
-        in: body
-        name: idcover
-        required: true
-        schema:
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-      summary: Update id cover
-      tags:
-      - Book
-  /book/prezzo/{id}:
-    put:
-      description: |-
-        Update the price of a book.
-        The type of the price is a float (e.g. 15.90).
-      parameters:
-      - description: Id
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Price
-        in: body
-        name: price
-        required: true
-        schema:
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-      summary: Update price
-      tags:
-      - Book
-  /book/quantita/{id}:
-    put:
-      description: |-
-        Update the quantity of a book
-        You can choose the quantity from 1 to 5
-      parameters:
-      - description: Id
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Quantity
-        in: body
-        name: quantity
-        required: true
-        schema:
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-      summary: Update quantity
-      tags:
-      - Book
-  /book/summary/{id}:
-    put:
-      description: |-
-        Update the summary of a book.
-        The summary of the book cannot be less than 512 characters.
-      parameters:
-      - description: Id
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Summary
-        in: body
-        name: summary
-        required: true
-        schema:
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-      summary: Update summary
-      tags:
-      - Book
-  /book/titolo/{id}:
-    put:
-      description: |-
-        Update title of a book.
+        Update all details of a book
         The title cannot be more than 255 characters.
       parameters:
       - description: Id
@@ -487,28 +188,28 @@ paths:
         name: id
         required: true
         type: string
-      - description: Title
+      - description: Book
         in: body
         name: title
         required: true
         schema:
-          type: object
+          $ref: '#/definitions/models.Book'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
+            $ref: '#/definitions/responses.Response'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
+            $ref: '#/definitions/responses.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/responses.ResponseErrorJSON'
-      summary: Update title
+            $ref: '#/definitions/responses.Response'
+      summary: Updates the book
       tags:
       - Book
 swagger: "2.0"

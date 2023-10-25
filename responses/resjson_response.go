@@ -3,10 +3,11 @@ package responses
 import (
 	"book-store-be/models"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
-// ResponseDatabase type for manage pagination of the database
-type ResponseDatabase struct {
+// ResponsePagination type for manage pagination of the database
+type ResponsePagination struct {
 	Data               []models.Book   `json:"data"`
 	PaginationDatabase `json:"paging"` // struct embedding
 }
@@ -17,16 +18,12 @@ type PaginationDatabase struct {
 	TotalPages  int `json:"total_pages"`
 }
 
-// ResponseErrorJSON type used for every time there is an error
-type ResponseErrorJSON struct {
-	Status  int    `json:"status"`
+type Response struct {
 	Message string `json:"message"`
 }
 
-// ResponseMessage response a JSON with status error and message error
-func ResponseMessage(c *gin.Context, status int, msg string) {
-	c.JSON(status, ResponseErrorJSON{
-		Status:  status,
+func ErrorServerResponseJson(c *gin.Context, msg string) {
+	c.JSON(http.StatusInternalServerError, Response{
 		Message: msg,
 	})
 }
