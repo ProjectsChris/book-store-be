@@ -4,14 +4,13 @@ receivers:
       grpc:
 
 exporters:
-  otlp:
+  otlp/tempo:
     endpoint: tempo:4317
     tls:
       insecure: true
 
   prometheus:
     endpoint: 0.0.0.0:8889
-
   debug:
 
 processors:
@@ -19,13 +18,15 @@ processors:
 
 extensions:
   health_check:
+  pprof:
 
 service:
-  extensions: [health_check]
+  extensions: [health_check, pprof]
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [otlp]
+      processors: [batch]
+      exporters: [otlp/tempo]
     metrics:
       receivers: [ otlp ]
       processors: [ batch ]

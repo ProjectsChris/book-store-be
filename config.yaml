@@ -14,5 +14,5 @@ database:
 
 observability:
   serviceName: "book-store-be"
-  endpoint: "192.168.3.6:4317" # TODO: check if ip address is correct
+  endpoint: "192.168.3.6:4317"
   enabled: false

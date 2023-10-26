@@ -30,7 +30,7 @@ func InitTracer(ctx context.Context, endPoint string, serviceName string) (func(
 
 // newTraceProvider init a new tracer providers
 func newTraceProvider(exp sdktrace.SpanExporter, serviceName string) (*sdktrace.TracerProvider, error) {
-	r, err := NewResource(serviceName)
+	r, err := newResource(serviceName)
 	if err != nil {
 		return nil, err
 	}

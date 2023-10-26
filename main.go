@@ -43,13 +43,13 @@ func main() {
 		}
 		defer trace(ctx)
 
-		// TODO: fix metrics
 		// init metric
-		//metric, err := observability.InitMetric(ctx, config.Observability.Endpoint, config.Observability.ServiceName)
-		//if err != nil {
-		//	panic("metric error" + err.Error())
-		//}
-		//defer metric(ctx)
+		metric, err := observability.InitMetric(ctx, config.Observability.Endpoint, config.Observability.ServiceName)
+		if err != nil {
+			panic("metric error" + err.Error())
+		}
+
+		defer metric(ctx)
 	}
 
 	// create a connection string for Postgresql

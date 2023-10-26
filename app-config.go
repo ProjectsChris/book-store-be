@@ -43,7 +43,7 @@ type LogOptions struct {
 	EnableJSON bool `yaml:"enableJson" mapstructure:"enableJson" json:"enableJson"`
 }
 
-// Default Config il file is not found
+// DefaultConfig il file is not found
 var DefaultConfig = Config{
 	Log: LogOptions{
 		Level:      -1,

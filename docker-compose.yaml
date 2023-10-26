@@ -3,7 +3,7 @@ version: "3.8"
 services:
   # Otel Collector
   otel-collector:
-    image: 'otel/opentelemetry-collector:0.88.0'
+    image: 'otel/opentelemetry-collector-contrib:0.88.0'
     container_name: 'otel-collector'
     restart: 'always'
     command:
@@ -15,16 +15,15 @@ services:
       - '8888:8888'   # Prometheus metrics exposed by the collector
       - '8889:8889'   # Prometheus exporter metrics
       - '13133:13133' # health_check extension
+      - '4317:4317'   # otlp grpc
 
   # Prometheus
   prometheus:
-    image: 'prom/prometheus:v2.47.1'
+    image: 'prom/prometheus:v2.47.2'
     container_name: 'prometheus'
     restart: 'always'
     command:
       - '--config.file=/etc/prometheus.yaml'
-      - '--web.enable-remote-write-receiver'
-      - '--enable-feature=exemplar-storage'
     volumes:
       - './configuration/prometheus.yaml:/etc/prometheus.yaml'
     ports:
@@ -50,11 +49,6 @@ services:
     volumes:
       - ./configuration/tempo.yaml:/etc/tempo.yaml
       - ./configuration/tempo-data:/tmp/tempo
-    ports:
-      - "14268:14268"  # jaeger ingest
-      - "3200:3200"   # tempo
-      - "4317:4317"  # otlp grpc
-      - "4318:4318"  # otlp http
 
   # Keycloak
   keycloak:
